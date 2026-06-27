@@ -11,6 +11,11 @@ struct HeroCard: View {
 
     private var mag: MagnitudeResult { entry.magnitude }
 
+    private var differentYear: Bool {
+        let cal = Calendar.current
+        return cal.component(.year, from: entry.nextOccurrence) != cal.component(.year, from: Date())
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             statusLabel
@@ -41,7 +46,9 @@ struct HeroCard: View {
                 .foregroundStyle(Color.mInk)
                 .padding(.bottom, MSpace.heroTitleDateGap)
 
-            Text(entry.nextOccurrence.formatted(.dateTime.weekday(.wide).month(.wide).day()))
+            Text(differentYear
+                ? entry.nextOccurrence.formatted(.dateTime.weekday(.wide).month(.wide).day().year())
+                : entry.nextOccurrence.formatted(.dateTime.weekday(.wide).month(.wide).day()))
                 .font(.mSans(MType.heroDate))
                 .foregroundStyle(Color.mInkSoft)
         }

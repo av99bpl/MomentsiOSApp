@@ -149,7 +149,10 @@ struct DetailScreen: View {
                 .foregroundStyle(Color.mInk)
                 .padding(.bottom, 6)
 
-            Text(entry.nextOccurrence.formatted(.dateTime.weekday(.wide).month(.wide).day().year()))
+            let diffYear = Calendar.current.component(.year, from: entry.nextOccurrence) != Calendar.current.component(.year, from: Date())
+            Text(diffYear
+                ? entry.nextOccurrence.formatted(.dateTime.weekday(.wide).month(.wide).day().year())
+                : entry.nextOccurrence.formatted(.dateTime.weekday(.wide).month(.wide).day()))
                 .font(.mSans(MType.detailDate))
                 .foregroundStyle(Color.mInkSoft)
 
