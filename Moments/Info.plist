@@ -8,5 +8,10 @@
 	</array>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Moments saves your share card to Photos.</string>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string>LaunchBackground</string>
+	</dict>
 </dict>
 </plist>

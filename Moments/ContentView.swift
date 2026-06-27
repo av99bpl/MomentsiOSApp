@@ -27,6 +27,7 @@ struct ContentView: View {
                     destination(for: dest)
                 }
         }
+        .background(Color.mPaper)
         .overlay(alignment: .bottom) {
             if let msg = appState.toastMessage {
                 ToastView(message: msg)
