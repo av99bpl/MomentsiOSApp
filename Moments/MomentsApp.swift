@@ -10,17 +10,8 @@ struct MomentsApp: App {
 
     private static let container: ModelContainer = {
         let schema = Schema([MomentEntry.self])
-        let config = ModelConfiguration(
-            schema: schema,
-            cloudKitDatabase: .private("iCloud.Vishful.Moments")
-        )
-        do {
-            return try ModelContainer(for: schema, configurations: [config])
-        } catch {
-            // Fallback to local store if CloudKit is unavailable (e.g. not signed in)
-            let localConfig = ModelConfiguration(schema: schema)
-            return try! ModelContainer(for: schema, configurations: [localConfig])
-        }
+        let config = ModelConfiguration(schema: schema)
+        return try! ModelContainer(for: schema, configurations: [config])
     }()
 
     var body: some Scene {
