@@ -1,111 +1,92 @@
+// AppState.swift
+// Moments
+
 import SwiftUI
-import Observation
 
 @Observable
 final class AppState {
 
-    // MARK: - Premium
+    // MARK: - Persisted state
 
-    var isPremium: Bool {
+    var isPremium: Bool = UserDefaults.standard.bool(forKey: "isPremium") {
         didSet { UserDefaults.standard.set(isPremium, forKey: "isPremium") }
     }
 
-    // MARK: - Pin (persisted across sessions)
-
-    private(set) var pinnedID: UUID? {
-        didSet { UserDefaults.standard.set(pinnedID?.uuidString, forKey: "pinnedID") }
-    }
-    private(set) var pinnedTitle: String = "" {
-        didSet { UserDefaults.standard.set(pinnedTitle, forKey: "pinnedTitle") }
-    }
-    private(set) var pinnedAt: Date? {
-        didSet { UserDefaults.standard.set(pinnedAt, forKey: "pinnedAt") }
+    var pinnedEntryID: UUID? = {
+        guard let s = UserDefaults.standard.string(forKey: "pinnedEntryID") else { return nil }
+        return UUID(uuidString: s)
+    }() {
+        didSet { UserDefaults.standard.set(pinnedEntryID?.uuidString, forKey: "pinnedEntryID") }
     }
 
-    var isPinValid: Bool {
-        guard let p = pinnedAt else { return false }
-        return Date().timeIntervalSince(p) <= MConstants.pinDurationSeconds
+    var pinnedAt: Date? = {
+        let t = UserDefaults.standard.double(forKey: "pinnedAt")
+        return t > 0 ? Date(timeIntervalSince1970: t) : nil
+    }() {
+        didSet { UserDefaults.standard.set(pinnedAt?.timeIntervalSince1970 ?? 0, forKey: "pinnedAt") }
     }
 
-    var pinDaysLeft: Int {
-        guard let p = pinnedAt, isPinValid else { return 0 }
-        let remaining = MConstants.pinDurationSeconds - Date().timeIntervalSince(p)
-        return max(0, Int(ceil(remaining / 86400)))
-    }
-
-    // MARK: - Toast
+    // MARK: - Ephemeral state
 
     var toastMessage: String? = nil
-    private var toastTask: Task<Void, Never>? = nil
 
-    // MARK: - Navigation state
+    // MARK: - Pin helpers
 
-    var navigationPath: [MomentEntry] = []
-    var showAddEdit = false
-    var editingEntry: MomentEntry? = nil   // nil = add mode
-    var showPaywall = false
-    var paywallReturnToAdd = false
-    var showDetail = false
-    var selectedEntry: MomentEntry? = nil
-
-    // MARK: - Init
-
-    init() {
-        self.isPremium = UserDefaults.standard.bool(forKey: "isPremium")
-        if let idStr = UserDefaults.standard.string(forKey: "pinnedID"),
-           let uuid = UUID(uuidString: idStr) {
-            self.pinnedID = uuid
-            self.pinnedTitle = UserDefaults.standard.string(forKey: "pinnedTitle") ?? ""
-            self.pinnedAt = UserDefaults.standard.object(forKey: "pinnedAt") as? Date
-        }
+    var isPinExpired: Bool {
+        guard let p = pinnedAt else { return true }
+        return Date().timeIntervalSince(p) > MConstants.pinDuration
     }
 
-    // MARK: - Pin actions
-
-    func pin(id: UUID, title: String) {
-        pinnedID = id
-        pinnedTitle = title
+    func pin(_ entry: MomentEntry) {
+        pinnedEntryID = entry.id
         pinnedAt = Date()
-        showToast("Pinned \"\(title)\" for 7 days")
+        entry.pinnedAt = Date()
     }
 
-    func unpin() {
-        let title = pinnedTitle
-        pinnedID = nil
-        pinnedTitle = ""
+    func unpin(entry: MomentEntry? = nil) {
+        pinnedEntryID = nil
         pinnedAt = nil
-        showToast("Unpinned \"\(title)\"")
+        entry?.pinnedAt = nil
     }
 
-    func clearPin() {
-        pinnedID = nil
-        pinnedTitle = ""
-        pinnedAt = nil
+    func checkPinExpiry(entries: [MomentEntry]) {
+        guard let pa = pinnedAt, let pinnedID = pinnedEntryID else { return }
+        guard Date().timeIntervalSince(pa) > MConstants.pinDuration else { return }
+        let matched = entries.first(where: { $0.id == pinnedID })
+        let title = matched?.title ?? ""
+        matched?.pinnedAt = nil
+        unpin()
+        let msg = title.isEmpty
+            ? "Pin expired — showing what's next"
+            : "Pin on \"\(title)\" expired — showing what's next"
+        showToast(msg, duration: 3.2)
     }
 
-    // Returns expired title if pin was cleared, else nil
-    func clearPinIfExpired() -> String? {
-        guard pinnedID != nil else { return nil }
-        guard let p = pinnedAt else { return nil }
-        if Date().timeIntervalSince(p) > MConstants.pinDurationSeconds {
-            let title = pinnedTitle
-            pinnedID = nil
-            pinnedTitle = ""
-            pinnedAt = nil
-            return title
+    // MARK: - Sorting
+
+    func sortedEntries(_ entries: [MomentEntry]) -> [MomentEntry] {
+        var sorted = entries.sorted { $0.diffDays < $1.diffDays }
+        if let id = pinnedEntryID, !isPinExpired,
+           let idx = sorted.firstIndex(where: { $0.id == id }) {
+            let pinned = sorted.remove(at: idx)
+            sorted.insert(pinned, at: 0)
         }
-        return nil
+        return sorted
+    }
+
+    // MARK: - Free limit
+
+    func atFreeLimit(entryCount: Int) -> Bool {
+        !isPremium && entryCount >= MConstants.freeEntryLimit
     }
 
     // MARK: - Toast
 
     func showToast(_ message: String, duration: Double = 2.2) {
-        toastTask?.cancel()
         toastMessage = message
-        toastTask = Task { [weak self] in
+        Task {
             try? await Task.sleep(for: .seconds(duration))
-            guard !Task.isCancelled else { return }
-            self?.toastMessage = nil
+            if toastMessage == message { toastMessage = nil }
         }
     }
 

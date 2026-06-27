@@ -1,3 +1,9 @@
+// ListScreen.swift
+// Moments
+//
+// Root screen. Hero card is OUTSIDE the scroll view — fixed position.
+// Only the ledger rows scroll.
+
 import SwiftUI
 import SwiftData
 
@@ -6,38 +12,20 @@ struct ListScreen: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var allEntries: [MomentEntry]
 
+    let onNavigate: (NavDest) -> Void
+
     @State private var swipedEntryID: UUID? = nil
     @State private var confirmDeleteEntry: MomentEntry? = nil
 
-    var variant: HeroVariant { .paper }  // TODO: expose via AppState if needed
+    // MARK: - Computed
 
-    // MARK: - Computed entries
-
-    var sortedEntries: [MomentEntry] {
-        allEntries.sorted { $0.diffDays < $1.diffDays }
-    }
-
-    var heroEntry: MomentEntry? {
-        if let pinnedID = appState.pinnedID,
-           appState.isPinValid,
-           let pinned = allEntries.first(where: { $0.id == pinnedID }) {
-            return pinned
-        }
-        return sortedEntries.first
-    }
-
-    var ledgerEntries: [MomentEntry] {
-        let heroID = heroEntry?.id
-        return sortedEntries.filter { $0.id != heroID }
-    }
+    var sorted: [MomentEntry] { appState.sortedEntries(allEntries) }
+    var heroEntry: MomentEntry? { sorted.first }
+    var ledgerEntries: [MomentEntry] { sorted.dropFirst().map { $0 } }
 
     var isPinned: Bool {
         guard let hero = heroEntry else { return false }
-        return appState.pinnedID == hero.id && appState.isPinValid
-    }
-
-    var atLimit: Bool {
-        !appState.isPremium && allEntries.count >= MConstants.freeEntryLimit
+        return appState.pinnedEntryID == hero.id && !appState.isPinExpired
     }
 
     var showEntryCount: Bool {
@@ -48,39 +36,19 @@ struct ListScreen: View {
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
-            Color.mPaper.ignoresSafeArea()
-
-            if allEntries.isEmpty {
+            if sorted.isEmpty {
                 EmptyState(onAdd: handleAddTap)
             } else {
-                ScrollView(.vertical, showsIndicators: false) {
-                    VStack(spacing: 0) {
-                        header
-                        heroSection
-                        ledgerSection
-                    }
+                VStack(spacing: 0) {
+                    header
+                    heroSection
+                    ledgerScrollView
                 }
-                .simultaneousGesture(
-                    TapGesture().onEnded { swipedEntryID = nil }
-                )
-            }
 
-            // FAB
-            Button(action: handleAddTap) {
-                Image(systemName: "plus")
-                    .font(.system(size: 22, weight: .medium))
-                    .foregroundStyle(Color.mPaper)
-                    .frame(width: MSpacing.fabSize, height: MSpacing.fabSize)
-                    .background(Color.mInk)
-                    .clipShape(Circle())
-                    .shadow(color: .black.opacity(0.25), radius: 12, y: 6)
+                fab
             }
-            .padding(.bottom, MSpacing.fabBottom)
-            .padding(.trailing, MSpacing.fabRight)
         }
-        .overlay(alignment: .bottom) {
-            if confirmDeleteEntry != nil { Color.clear }  // placeholder, sheet below
-        }
+        .paperBG()
         .overlay {
             if let entry = confirmDeleteEntry {
                 ConfirmDeleteSheet(
@@ -96,9 +64,9 @@ struct ListScreen: View {
                 )
                 .transition(.opacity)
                 .zIndex(10)
+                .animation(.easeInOut(duration: 0.2), value: confirmDeleteEntry?.id)
             }
         }
-        .animation(.easeInOut(duration: 0.2), value: confirmDeleteEntry?.id)
     }
 
     // MARK: - Header
@@ -107,11 +75,9 @@ struct ListScreen: View {
         HStack(spacing: 0) {
             HStack(spacing: 6) {
                 Text("MOMENTS")
-                    .font(.mSans(MTypography.wordmark, weight: .semibold))
+                    .font(.mSans(MType.wordmark, weight: .semibold))
                     .foregroundStyle(Color.mInkSoft)
                     .tracking(1.2)
-
-                // iCloud sync indicator
                 Image(systemName: "cloud")
                     .font(.system(size: 13, weight: .regular))
                     .foregroundStyle(Color.mInkSoft)
@@ -121,80 +87,88 @@ struct ListScreen: View {
 
             if showEntryCount {
                 Text("\(allEntries.count)/\(MConstants.freeEntryLimit)")
-                    .font(.mSans(MTypography.counter, weight: .semibold))
+                    .font(.mSans(MType.counter, weight: .semibold))
                     .foregroundStyle(
-                        allEntries.count >= MConstants.freeEntryLimit
-                            ? Color.mInk : Color.mInkSoft
+                        allEntries.count >= MConstants.freeEntryLimit ? Color.mInk : Color.mInkSoft
                     )
             }
         }
-        .padding(.horizontal, MSpacing.screenH + 8)
-        .padding(.top, MSpacing.statusBar)
-        .padding(.bottom, MSpacing.headerBottom)
+        .padding(.horizontal, MSpace.screenH + 8)
+        .padding(.top, MSpace.statusBar)
+        .padding(.bottom, MSpace.headerBottom)
     }
 
-    // MARK: - Hero section
+    // MARK: - Hero
 
     @ViewBuilder
     var heroSection: some View {
         if let hero = heroEntry {
-            HeroCard(entry: hero, isPinned: isPinned, variant: variant)
-                .padding(.horizontal, MSpacing.heroCardMargin)
-                .padding(.top, MSpacing.heroCardTopMargin)
+            HeroCard(entry: hero, isPinned: isPinned)
+                .padding(.horizontal, MSpace.heroMargin)
+                .padding(.top, MSpace.heroTopMargin)
                 .padding(.bottom, 8)
                 .contentShape(Rectangle())
                 .onTapGesture {
-                    appState.selectedEntry = hero
-                    appState.showDetail = true
+                    onNavigate(.detail(hero.persistentModelID))
                 }
         }
     }
 
     // MARK: - Ledger
 
-    var ledgerSection: some View {
-        LazyVStack(spacing: 0) {
-            ForEach(Array(ledgerEntries.enumerated()), id: \.element.id) { index, entry in
-                LedgerRow(
-                    entry: entry,
-                    isLast: index == ledgerEntries.count - 1,
-                    swipedID: $swipedEntryID,
-                    onTap: {
-                        appState.selectedEntry = entry
-                        appState.showDetail = true
-                    },
-                    onDeleteRequest: {
-                        confirmDeleteEntry = entry
-                    }
-                )
-                .padding(.horizontal, MSpacing.screenH)
-            }
+    var ledgerScrollView: some View {
+        ScrollView(.vertical, showsIndicators: false) {
+            LazyVStack(spacing: 0) {
+                ForEach(Array(ledgerEntries.enumerated()), id: \.element.id) { index, entry in
+                    LedgerRow(
+                        entry: entry,
+                        isLast: index == ledgerEntries.count - 1,
+                        swipedID: $swipedEntryID,
+                        onTap: { onNavigate(.detail(entry.persistentModelID)) },
+                        onDeleteRequest: { confirmDeleteEntry = entry }
+                    )
+                    .padding(.horizontal, MSpace.screenH)
+                }
 
-            // hint text
-            Text("Swipe left on an entry to delete · Tap to view")
-                .font(.mSans(12))
-                .foregroundStyle(Color.mHairline)
-                .padding(.top, 18)
-                .padding(.bottom, 100)
+                Color.clear.frame(height: 100)  // FAB clearance
+            }
         }
+        .simultaneousGesture(
+            TapGesture().onEnded { swipedEntryID = nil }
+        )
+    }
+
+    // MARK: - FAB
+
+    var fab: some View {
+        Button(action: handleAddTap) {
+            Image(systemName: "plus")
+                .font(.system(size: MSpace.fabIcon, weight: .medium))
+                .foregroundStyle(Color.mPaper)
+                .frame(width: MSpace.fabSize, height: MSpace.fabSize)
+                .background(Color.mInk)
+                .clipShape(Circle())
+                .shadow(color: .black.opacity(0.25), radius: 12, y: 6)
+        }
+        .padding(.bottom, MSpace.fabBottom)
+        .padding(.trailing, MSpace.fabRight)
     }
 
     // MARK: - Actions
 
     func handleAddTap() {
-        if atLimit {
-            appState.paywallReturnToAdd = true
-            appState.showPaywall = true
+        if appState.atFreeLimit(entryCount: allEntries.count) {
+            onNavigate(.paywall)
         } else {
-            appState.editingEntry = nil
-            appState.showAddEdit = true
+            onNavigate(.addEdit(nil))
         }
     }
 
     func deleteEntry(_ entry: MomentEntry) {
-        if appState.pinnedID == entry.id {
-            appState.clearPin()
+        if appState.pinnedEntryID == entry.id {
+            appState.unpin(entry: entry)
         }
+        cancelReminder(for: entry)
         let title = entry.title
         modelContext.delete(entry)
         swipedEntryID = nil
@@ -211,22 +185,19 @@ struct LedgerRow: View {
     let onTap: () -> Void
     let onDeleteRequest: () -> Void
 
-    private let deleteWidth: CGFloat = 76
     @State private var offset: CGFloat = 0
-
     var isSwiped: Bool { swipedID == entry.id }
 
     var body: some View {
         ZStack(alignment: .trailing) {
-            // Delete button behind
-            Button(action: {
+            Button {
                 withAnimation(.easeOut(duration: 0.15)) { offset = 0 }
                 swipedID = nil
                 onDeleteRequest()
-            }) {
+            } label: {
                 Rectangle()
                     .fill(Color.mDestructive)
-                    .frame(width: deleteWidth)
+                    .frame(width: MSpace.swipeDeleteW)
                     .overlay(
                         Text("Delete")
                             .font(.mSans(13, weight: .bold))
@@ -235,24 +206,16 @@ struct LedgerRow: View {
             }
             .frame(maxHeight: .infinity)
 
-            // Row content
             rowContent
                 .offset(x: offset)
                 .gesture(swipeGesture)
         }
         .clipped()
         .overlay(alignment: .bottom) {
-            if !isLast {
-                Color.mHairline.frame(height: 1)
-            }
+            if !isLast { Color.mHairline.frame(height: 1) }
         }
         .onChange(of: swipedID) { _, id in
-            if id != entry.id && offset != 0 {
-                withAnimation(.easeOut(duration: 0.2)) { offset = 0 }
-            }
-        }
-        .onChange(of: isSwiped) { _, swiped in
-            if !swiped {
+            if id != entry.id, offset != 0 {
                 withAnimation(.easeOut(duration: 0.2)) { offset = 0 }
             }
         }
@@ -262,10 +225,10 @@ struct LedgerRow: View {
         HStack(alignment: .center, spacing: 0) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(entry.title)
-                    .font(.mSans(MTypography.rowTitle, weight: .semibold))
+                    .font(.mSans(MType.rowTitle, weight: .medium))
                     .foregroundStyle(Color.mInk)
-                Text(subtitleText)
-                    .font(.mSans(MTypography.rowSubtitle))
+                Text(entry.listSubtitle)
+                    .font(.mSans(MType.rowSubtitle))
                     .foregroundStyle(Color.mInkSoft)
             }
 
@@ -274,19 +237,19 @@ struct LedgerRow: View {
             HStack(alignment: .firstTextBaseline, spacing: 3) {
                 let mag = entry.magnitude
                 Text(mag.number)
-                    .font(.mSerif(MTypography.rowNumber))
+                    .font(.mSerif(MType.rowNumber))
                     .foregroundStyle(entry.isFuture ? Color.mInk : Color.mPast)
                     .monospacedDigit()
                 if !mag.unit.isEmpty {
                     Text(mag.unit)
-                        .font(.mSans(MTypography.rowUnit))
+                        .font(.mSans(MType.rowUnit))
                         .foregroundStyle(Color.mInkSoft)
                 }
             }
         }
-        .padding(.vertical, MSpacing.rowV)
-        .padding(.horizontal, MSpacing.rowH)
-        .background(Color.mPaper)
+        .padding(.vertical, MSpace.rowV)
+        .padding(.horizontal, MSpace.rowH)
+        .background(Color.clear)
         .contentShape(Rectangle())
         .onTapGesture {
             if isSwiped {
@@ -300,24 +263,19 @@ struct LedgerRow: View {
         }
     }
 
-    var subtitleText: String {
-        if entry.recurrence != .none { return entry.recurrence.label }
-        return entry.isFuture ? "Upcoming" : "Ongoing"
-    }
-
     var swipeGesture: some Gesture {
         DragGesture(minimumDistance: 8, coordinateSpace: .local)
             .onChanged { value in
-                let base: CGFloat = isSwiped ? -deleteWidth : 0
+                let base: CGFloat = isSwiped ? -MSpace.swipeDeleteW : 0
                 let tentative = base + value.translation.width
-                offset = max(-deleteWidth - 8, min(0, tentative))
+                offset = max(-MSpace.swipeDeleteW - 8, min(0, tentative))
             }
             .onEnded { value in
-                let base: CGFloat = isSwiped ? -deleteWidth : 0
+                let base: CGFloat = isSwiped ? -MSpace.swipeDeleteW : 0
                 let projected = base + value.translation.width
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    if projected < -(deleteWidth / 2) {
-                        offset = -deleteWidth
+                    if projected < -(MSpace.swipeDeleteW / 2) {
+                        offset = -MSpace.swipeDeleteW
                         swipedID = entry.id
                     } else {
                         offset = 0

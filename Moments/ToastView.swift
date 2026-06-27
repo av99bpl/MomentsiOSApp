@@ -1,3 +1,6 @@
+// ToastView.swift
+// Moments
+
 import SwiftUI
 
 struct ToastView: View {
@@ -5,12 +8,12 @@ struct ToastView: View {
 
     var body: some View {
         Text(message)
-            .font(.mSans(MTypography.toast, weight: .semibold))
+            .font(.mSans(MType.toast, weight: .semibold))
             .foregroundStyle(Color.mPaper)
-            .padding(.vertical, 10)
-            .padding(.horizontal, 18)
+            .padding(.vertical, MSpace.toastPadV)
+            .padding(.horizontal, MSpace.toastPadH)
             .background(Color.mInk)
-            .clipShape(RoundedRectangle(cornerRadius: MSpacing.toastRadius))
+            .clipShape(RoundedRectangle(cornerRadius: MSpace.toastRadius))
             .shadow(color: .black.opacity(0.25), radius: 10, y: 4)
     }
 }

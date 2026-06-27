@@ -1,3 +1,6 @@
+// ConfirmDeleteSheet.swift
+// Moments
+
 import SwiftUI
 
 struct ConfirmDeleteSheet: View {
@@ -7,56 +10,54 @@ struct ConfirmDeleteSheet: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            // Dimmed overlay
             Color.black.opacity(0.32)
                 .ignoresSafeArea()
                 .onTapGesture { onCancel() }
 
-            // Sheet
             VStack(spacing: 0) {
                 VStack(spacing: 6) {
                     Text("Delete \"\(title)\"?")
-                        .font(.mSerif(19))
+                        .font(.mSerif(MType.sheetTitle))
                         .foregroundStyle(Color.mInk)
                     Text("This can't be undone.")
-                        .font(.mSans(14))
+                        .font(.mSans(MType.sheetSubtitle))
                         .foregroundStyle(Color.mInkSoft)
                         .lineSpacing(4)
                 }
                 .multilineTextAlignment(.center)
                 .padding(.bottom, 22)
 
-                VStack(spacing: 10) {
+                VStack(spacing: MSpace.sheetBtnGap) {
                     Button(action: onDelete) {
                         Text("Delete")
-                            .font(.mSans(16, weight: .bold))
+                            .font(.mSans(MType.sheetBtn, weight: .bold))
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 15)
+                            .padding(.vertical, MSpace.sheetBtnV)
                             .background(Color.mDestructive)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .clipShape(RoundedRectangle(cornerRadius: MSpace.sheetBtnRadius))
                     }
                     Button(action: onCancel) {
                         Text("Cancel")
-                            .font(.mSans(16, weight: .semibold))
+                            .font(.mSans(MType.sheetBtn, weight: .semibold))
                             .foregroundStyle(Color.mInk)
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 15)
+                            .padding(.vertical, MSpace.sheetBtnV)
                             .background(Color.mPaperRaised)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .clipShape(RoundedRectangle(cornerRadius: MSpace.sheetBtnRadius))
                     }
                 }
             }
-            .padding(.horizontal, MSpacing.sheetPaddingH)
-            .padding(.top, MSpacing.sheetPaddingV)
-            .padding(.bottom, MSpacing.sheetPaddingBottom)
+            .padding(.horizontal, MSpace.sheetPadH)
+            .padding(.top, MSpace.sheetPadTop)
+            .padding(.bottom, MSpace.sheetPadBottom)
             .background(Color.mPaper)
             .clipShape(
                 .rect(
-                    topLeadingRadius: MSpacing.sheetRadius,
+                    topLeadingRadius: MSpace.sheetRadius,
                     bottomLeadingRadius: 0,
                     bottomTrailingRadius: 0,
-                    topTrailingRadius: MSpacing.sheetRadius
+                    topTrailingRadius: MSpace.sheetRadius
                 )
             )
             .shadow(color: .black.opacity(0.18), radius: 20, y: -8)

@@ -1,61 +1,82 @@
+// DetailScreen.swift
+// Moments
+//
+// Pushed onto NavigationStack. Fetches entry live from SwiftData via entryID.
+
 import SwiftUI
 import SwiftData
 
 struct DetailScreen: View {
-    @Environment(AppState.self) private var appState
-    @Environment(\.modelContext) private var modelContext
+    let entryID: PersistentIdentifier
+    let onNavigate: (NavDest) -> Void
 
-    let entry: MomentEntry
+    @Environment(AppState.self) private var appState
+    @Environment(\.dismiss) private var dismiss
+    @Query private var allEntries: [MomentEntry]
 
     @State private var showShare = false
 
-    private var mag: FormattedMagnitude { entry.magnitude }
-    private var isPinned: Bool { appState.pinnedID == entry.id && appState.isPinValid }
-    private var hasOtherPin: Bool { appState.pinnedID != nil && appState.pinnedID != entry.id && appState.isPinValid }
+    var entry: MomentEntry? {
+        allEntries.first { $0.persistentModelID == entryID }
+    }
 
     var body: some View {
+        Group {
+            if let entry {
+                mainContent(entry: entry)
+            } else {
+                Color.clear.onAppear { dismiss() }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func mainContent(entry: MomentEntry) -> some View {
+        let mag = entry.magnitude
+        let isPinned = appState.pinnedEntryID == entry.id && !appState.isPinExpired
+        let pinDaysLeft: Int = {
+            guard let p = appState.pinnedAt, !appState.isPinExpired else { return 0 }
+            let remaining = MConstants.pinDuration - Date().timeIntervalSince(p)
+            return max(0, Int(ceil(remaining / 86400)))
+        }()
+
         ZStack {
-            Color.mPaper.ignoresSafeArea()
-
             VStack(spacing: 0) {
-                // Nav bar
-                navBar
+                navBar(entry: entry)
 
-                // Scrollable content
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 0) {
-                        contentArea
-                        reminderSection
-                        pinSection
+                        countArea(entry: entry, mag: mag, isPinned: isPinned)
+                        reminderSection(entry: entry)
+                        pinSection(entry: entry, isPinned: isPinned, pinDaysLeft: pinDaysLeft)
                         Spacer(minLength: 40)
                     }
-                    .padding(.horizontal, MSpacing.screenH + 8)
+                    .padding(.horizontal, MSpace.screenH + 8)
                 }
             }
 
-            // Share sheet
             if showShare {
                 ShareSheet(entry: entry, onDismiss: { showShare = false })
                     .transition(.opacity)
                     .zIndex(10)
+                    .animation(.easeInOut(duration: 0.2), value: showShare)
             }
         }
-        .animation(.easeInOut(duration: 0.2), value: showShare)
+        .paperBG()
     }
 
-    // MARK: - Nav Bar
+    // MARK: - Nav bar
 
-    var navBar: some View {
+    private func navBar(entry: MomentEntry) -> some View {
         HStack(spacing: 0) {
             Button {
-                appState.showDetail = false
-                appState.selectedEntry = nil
+                dismiss()
             } label: {
                 HStack(spacing: 2) {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 18, weight: .medium))
                     Text("Back")
-                        .font(.mSans(MTypography.navItem))
+                        .font(.mSans(MType.navItem))
                 }
                 .foregroundStyle(Color.mInk)
             }
@@ -64,20 +85,16 @@ struct DetailScreen: View {
             Spacer()
 
             HStack(spacing: 4) {
-                // iCloud synced indicator
                 HStack(spacing: 3) {
                     Image(systemName: "cloud")
                         .font(.system(size: 12))
-                        .foregroundStyle(Color.mInkSoft)
                     Text("Synced")
                         .font(.mSans(11))
-                        .foregroundStyle(Color.mInkSoft)
                 }
+                .foregroundStyle(Color.mInkSoft)
                 .padding(.trailing, 4)
 
-                Button {
-                    showShare = true
-                } label: {
+                Button { showShare = true } label: {
                     Image(systemName: "square.and.arrow.up")
                         .font(.system(size: 17, weight: .regular))
                         .foregroundStyle(Color.mInk)
@@ -86,74 +103,64 @@ struct DetailScreen: View {
                 .padding(.vertical, 8)
 
                 Button {
-                    appState.editingEntry = entry
-                    appState.showAddEdit = true
+                    onNavigate(.addEdit(entry.persistentModelID))
                 } label: {
                     Text("Edit")
-                        .font(.mSans(MTypography.navItem, weight: .bold))
+                        .font(.mSans(MType.navItem, weight: .bold))
                         .foregroundStyle(Color.mInk)
                 }
                 .padding(8)
             }
         }
         .padding(.horizontal, 8)
-        .padding(.top, MSpacing.statusBar)
+        .padding(.top, MSpace.statusBar)
         .padding(.bottom, 20)
     }
 
-    // MARK: - Content Area
+    // MARK: - Count area
 
-    var contentArea: some View {
+    private func countArea(entry: MomentEntry, mag: MagnitudeResult, isPinned: Bool) -> some View {
         VStack(spacing: 0) {
-            // Status
-            Text(statusLabel)
-                .font(.mSans(13, weight: .semibold))
-                .foregroundStyle(statusColor)
-                .tracking(0.3)
-                .textCase(.uppercase)
+            statusLabel(entry: entry, isPinned: isPinned)
                 .padding(.bottom, 16)
 
-            // Number or Today
             if entry.isToday {
                 Text("Today")
-                    .font(.mSerif(MTypography.todayWordDetail))
+                    .font(.mSerif(MType.detailToday))
                     .foregroundStyle(Color.mInk)
                     .tracking(-1)
                     .padding(.bottom, 24)
             } else {
                 Text(mag.number)
-                    .font(.mSerif(MTypography.detailNumber))
+                    .font(.mSerif(MType.detailNumber))
                     .foregroundStyle(Color.mInk)
                     .monospacedDigit()
                     .tracking(-2)
 
                 Text(mag.unit)
-                    .font(.mSans(MTypography.detailUnit))
+                    .font(.mSans(MType.detailUnit))
                     .foregroundStyle(Color.mInkSoft)
                     .padding(.top, 6)
                     .padding(.bottom, 28)
             }
 
-            // Title
             Text(entry.title)
-                .font(.mSans(MTypography.detailTitle, weight: .semibold))
+                .font(.mSans(MType.detailTitle, weight: .semibold))
                 .foregroundStyle(Color.mInk)
                 .padding(.bottom, 6)
 
-            // Date
             Text(entry.nextOccurrence.formatted(.dateTime.weekday(.wide).month(.wide).day().year()))
-                .font(.mSans(MTypography.detailDate))
+                .font(.mSans(MType.detailDate))
                 .foregroundStyle(Color.mInkSoft)
 
-            // Recurrence pill
             if entry.recurrence != .none {
-                Text("Repeats \(entry.recurrence.label.lowercased())")
-                    .font(.mSans(13))
+                Text(entry.recurrence.detailLabel)
+                    .font(.mSans(MType.recurrencePill))
                     .foregroundStyle(Color.mInkSoft)
-                    .padding(.vertical, 6)
-                    .padding(.horizontal, 14)
+                    .padding(.vertical, MSpace.recurrPillPadV)
+                    .padding(.horizontal, MSpace.recurrPillPadH)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 14)
+                        RoundedRectangle(cornerRadius: MSpace.recurrPillRadius)
                             .stroke(Color.mHairline, lineWidth: 1)
                     )
                     .padding(.top, 14)
@@ -164,157 +171,157 @@ struct DetailScreen: View {
         .padding(.bottom, 32)
     }
 
-    var statusLabel: String {
-        if entry.isToday { return "TODAY" }
-        return entry.isFuture ? "COUNTING DOWN" : "COUNTING UP"
+    private func statusLabel(entry: MomentEntry, isPinned: Bool) -> some View {
+        let text: String = {
+            if entry.isToday { return "TODAY" }
+            if isPinned { return "PINNED" }
+            return entry.isFuture ? "COUNTING DOWN" : "COUNTING UP"
+        }()
+        let color = (entry.isFuture || entry.isToday) ? Color.mClay : Color.mPast
+        return HStack(spacing: 5) {
+            if isPinned && !entry.isToday {
+                Image(systemName: "pin.fill")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(color)
+            }
+            Text(text)
+                .font(.mSans(MType.detailStatus, weight: .semibold))
+                .foregroundStyle(color)
+                .tracking(0.3)
+                .textCase(.uppercase)
+        }
     }
 
-    var statusColor: Color {
-        entry.isFuture || entry.isToday ? Color.mClay : Color.mPast
-    }
+    // MARK: - Reminder section
 
-    // MARK: - Reminder Section
-
-    var reminderSection: some View {
+    private func reminderSection(entry: MomentEntry) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Header
             HStack(spacing: 6) {
                 Image(systemName: "bell")
                     .font(.system(size: 13))
-                    .foregroundStyle(Color.mInkSoft)
                 Text("REMINDER")
-                    .font(.mSans(12, weight: .bold))
-                    .foregroundStyle(Color.mInkSoft)
+                    .font(.mSans(MType.fieldLabel, weight: .bold))
                     .tracking(0.8)
             }
+            .foregroundStyle(Color.mInkSoft)
             .padding(.bottom, 10)
 
-            // Chips
-            let options: [(ReminderDays, String)] = [
-                (.none, "None"),
-                (.oneDay, "1 day"),
-                (.threeDays, "3 days"),
-                (.oneWeek, "1 week"),
-                (.twoWeeks, "2 weeks"),
-            ]
-
-            FlowLayout(spacing: 7) {
-                ForEach(options, id: \.0) { day, label in
+            FlowLayout(spacing: MSpace.reminderChipH / 2) {
+                ForEach(ReminderDays.allCases) { day in
                     let isActive = entry.reminderDays == day.rawValue
-                    Button {
-                        setReminder(day)
-                    } label: {
-                        Text(label)
-                            .font(.mSans(13, weight: .semibold))
+                    Button { setReminder(day, entry: entry) } label: {
+                        Text(day.chipLabel)
+                            .font(.mSans(MType.chip, weight: .semibold))
                             .foregroundStyle(isActive ? Color.mPaper : Color.mInk)
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 14)
+                            .padding(.vertical, MSpace.reminderChipV)
+                            .padding(.horizontal, MSpace.reminderChipH)
                             .background(isActive ? Color.mInk : Color.clear)
                             .overlay(
-                                RoundedRectangle(cornerRadius: 16)
+                                RoundedRectangle(cornerRadius: MSpace.reminderChipR)
                                     .stroke(isActive ? Color.mInk : Color.mHairline, lineWidth: 1)
                             )
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .clipShape(RoundedRectangle(cornerRadius: MSpace.reminderChipR))
                     }
                 }
             }
 
-            // Confirmation text
-            if entry.reminderDays > 0 {
-                let day = ReminderDays(rawValue: entry.reminderDays)
-                Text("You'll be reminded \(day?.label.lowercased() ?? "") · \(entry.title)")
-                    .font(.mSans(12))
+            if entry.reminderDays > 0,
+               let day = ReminderDays(rawValue: entry.reminderDays) {
+                Text("Reminder set \(day.confirmationLabel) · \(entry.title)")
+                    .font(.mSans(MType.reminderConfirm))
                     .foregroundStyle(Color.mInkSoft)
                     .padding(.top, 8)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.bottom, 28)
+        .padding(.bottom, MSpace.reminderTop)
     }
 
-    func setReminder(_ day: ReminderDays) {
-        if day != .none {
+    private func setReminder(_ day: ReminderDays, entry: MomentEntry) {
+        if day == .none {
+            entry.reminderDays = 0
+            cancelReminder(for: entry)
+        } else {
             requestNotificationPermission { granted in
                 guard granted else { return }
                 entry.reminderDays = day.rawValue
                 scheduleReminder(for: entry)
             }
-        } else {
-            entry.reminderDays = 0
-            scheduleReminder(for: entry)
         }
     }
 
-    // MARK: - Pin Section
+    // MARK: - Pin section
 
-    var pinSection: some View {
+    private func pinSection(entry: MomentEntry, isPinned: Bool, pinDaysLeft: Int) -> some View {
         VStack(spacing: 10) {
             if isPinned {
-                Button(action: { appState.unpin() }) {
+                Button {
+                    appState.unpin(entry: entry)
+                    appState.showToast("Unpinned \"\(entry.title)\"")
+                } label: {
                     HStack(spacing: 7) {
                         Image(systemName: "pin.slash")
                             .font(.system(size: 14, weight: .medium))
                         Text("Unpin")
-                            .font(.mSans(14, weight: .semibold))
+                            .font(.mSans(MType.actionBtn, weight: .semibold))
                     }
                     .foregroundStyle(Color.mInk)
-                    .padding(.vertical, MSpacing.actionBtnV)
-                    .padding(.horizontal, MSpacing.actionBtnH)
+                    .padding(.vertical, MSpace.actionBtnV)
+                    .padding(.horizontal, MSpace.actionBtnH)
                     .overlay(
-                        RoundedRectangle(cornerRadius: MSpacing.actionBtnRadius)
+                        RoundedRectangle(cornerRadius: MSpace.actionBtnRadius)
                             .stroke(Color.mHairline, lineWidth: 1)
                     )
                 }
 
-                let daysLeft = appState.pinDaysLeft
-                Text(daysLeft <= 0 ? "Pin expires today" : "Pinned as hero · \(daysLeft) day\(daysLeft == 1 ? "" : "s") left")
-                    .font(.mSans(12))
+                Text(pinDaysLeft <= 0
+                     ? "Pin expires today"
+                     : "Pinned as hero · \(pinDaysLeft) day\(pinDaysLeft == 1 ? "" : "s") left")
+                    .font(.mSans(MType.reminderConfirm))
                     .foregroundStyle(Color.mInkSoft)
             } else {
-                Button(action: {
-                    appState.pin(id: entry.id, title: entry.title)
-                }) {
+                Button {
+                    appState.pin(entry)
+                    appState.showToast("Pinned \"\(entry.title)\" for 7 days")
+                } label: {
                     HStack(spacing: 7) {
                         Image(systemName: "pin")
                             .font(.system(size: 14, weight: .medium))
                         Text("Pin as Hero")
-                            .font(.mSans(14, weight: .semibold))
+                            .font(.mSans(MType.actionBtn, weight: .semibold))
                     }
                     .foregroundStyle(Color.mInk)
-                    .padding(.vertical, MSpacing.actionBtnV)
-                    .padding(.horizontal, MSpacing.actionBtnH)
+                    .padding(.vertical, MSpace.actionBtnV)
+                    .padding(.horizontal, MSpace.actionBtnH)
                     .overlay(
-                        RoundedRectangle(cornerRadius: MSpacing.actionBtnRadius)
+                        RoundedRectangle(cornerRadius: MSpace.actionBtnRadius)
                             .stroke(Color.mHairline, lineWidth: 1)
                     )
                 }
 
-                if hasOtherPin {
-                    Text("Replaces the current pin on \"\(appState.pinnedTitle)\" · stays for 7 days")
-                        .font(.mSans(12))
-                        .foregroundStyle(Color.mInkSoft)
-                        .multilineTextAlignment(.center)
-                } else {
-                    Text("Keeps this at the top for 7 days, however the dates fall")
-                        .font(.mSans(12))
-                        .foregroundStyle(Color.mInkSoft)
-                        .multilineTextAlignment(.center)
-                }
+                let hasOtherPin = appState.pinnedEntryID != nil && appState.pinnedEntryID != entry.id && !appState.isPinExpired
+                Text(hasOtherPin
+                     ? "Replaces the current pin · stays for 7 days"
+                     : "Keeps this at the top for 7 days, however the dates fall")
+                    .font(.mSans(MType.reminderConfirm))
+                    .foregroundStyle(Color.mInkSoft)
+                    .multilineTextAlignment(.center)
             }
         }
         .frame(maxWidth: .infinity)
+        .padding(.top, MSpace.pinSectionTop)
         .padding(.bottom, 28)
     }
 }
 
-// MARK: - Simple Flow Layout
+// MARK: - Flow Layout
 
 struct FlowLayout: Layout {
     var spacing: CGFloat = 8
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
         let rows = computeRows(proposal: proposal, subviews: subviews)
-        let height = rows.map { $0.maxHeight }.reduce(0, +) + CGFloat(max(0, rows.count - 1)) * spacing
+        let height = rows.map(\.maxHeight).reduce(0, +) + CGFloat(max(0, rows.count - 1)) * spacing
         return CGSize(width: proposal.width ?? 0, height: height)
     }
 
@@ -342,7 +349,6 @@ struct FlowLayout: Layout {
         var rows: [Row] = []
         var current = Row()
         var x: CGFloat = 0
-
         for sub in subviews {
             let size = sub.sizeThatFits(.unspecified)
             if x + size.width > maxWidth && !current.subviews.isEmpty {

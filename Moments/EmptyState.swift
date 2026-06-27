@@ -1,3 +1,6 @@
+// EmptyState.swift
+// Moments
+
 import SwiftUI
 
 struct EmptyState: View {
@@ -11,12 +14,12 @@ struct EmptyState: View {
                 .padding(.bottom, 18)
 
             Text("Nothing marked yet")
-                .font(.mSans(18, weight: .semibold))
+                .font(.mSans(MType.emptyHead, weight: .semibold))
                 .foregroundStyle(Color.mInk)
                 .padding(.bottom, 8)
 
             Text("Add a date worth tracking — a birthday, an anniversary, or a day you'd like to remember.")
-                .font(.mSans(14))
+                .font(.mSans(MType.emptyBody))
                 .foregroundStyle(Color.mInkSoft)
                 .multilineTextAlignment(.center)
                 .lineSpacing(4)
@@ -24,7 +27,7 @@ struct EmptyState: View {
 
             Button(action: onAdd) {
                 Text("Add your first date")
-                    .font(.mSans(15, weight: .semibold))
+                    .font(.mSans(MType.emptyBtn, weight: .semibold))
                     .foregroundStyle(Color.mPaper)
                     .padding(.vertical, 13)
                     .padding(.horizontal, 26)
