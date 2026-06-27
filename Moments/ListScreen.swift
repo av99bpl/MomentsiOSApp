@@ -249,7 +249,7 @@ struct LedgerRow: View {
         }
         .padding(.vertical, MSpace.rowV)
         .padding(.horizontal, MSpace.rowH)
-        .background(Color.clear)
+        .background(Color.mPaper)
         .contentShape(Rectangle())
         .onTapGesture {
             if isSwiped {
