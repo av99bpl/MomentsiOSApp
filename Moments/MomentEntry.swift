@@ -90,18 +90,21 @@ enum ReminderDays: Int, Codable, CaseIterable, Identifiable {
 
 @Model
 final class MomentEntry {
-    var id: UUID
-    var title: String
+    // Property-level defaults are required for CloudKit compatibility:
+    // CloudKit reconstructs records without calling Swift init, so every
+    // non-optional property must carry a fallback value.
+    var id: UUID = UUID()
+    var title: String = ""
     /// Anchor date. For recurring entries the next occurrence is computed from this.
-    var date: Date
-    var recurrence: Recurrence
-    var direction: Direction
+    var date: Date = Date()
+    var recurrence: Recurrence = Recurrence.none
+    var direction: Direction = Direction.down
     /// Premium: id into MAccentColor.all. Defaults to "clay".
-    var accentID: String
+    var accentID: String = "clay"
     /// Premium: emoji string. nil = no icon.
     var icon: String?
     /// Reminder: days before event to notify. 0 = no reminder.
-    var reminderDays: Int
+    var reminderDays: Int = 0
     /// Non-nil when this entry is pinned as hero. Cleared after 7 days.
     var pinnedAt: Date?
 
