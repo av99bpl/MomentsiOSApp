@@ -137,7 +137,7 @@ struct DetailScreen: View {
                     .monospacedDigit()
                     .tracking(-2)
 
-                Text(mag.unit)
+                Text(entry.isFuture ? "\(mag.unit) to go" : "\(mag.unit) ago")
                     .font(.mSans(MType.detailUnit))
                     .foregroundStyle(Color.mInkSoft)
                     .padding(.top, 6)

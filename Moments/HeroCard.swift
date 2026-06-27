@@ -29,7 +29,7 @@ struct HeroCard: View {
                     .monospacedDigit()
                     .tracking(-2)
 
-                Text("\(mag.unit) \(entry.isFuture ? "to go" : "since")")
+                Text(entry.isFuture ? "\(mag.unit) to go" : "\(mag.unit) ago")
                     .font(.mSans(MType.heroUnit))
                     .foregroundStyle(Color.mInkSoft)
                     .padding(.top, MSpace.heroNumUnitGap)

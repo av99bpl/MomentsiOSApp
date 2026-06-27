@@ -190,30 +190,32 @@ struct LedgerRow: View {
 
     var body: some View {
         ZStack(alignment: .trailing) {
+            // Row content — stays fixed in place, never shifts
+            rowContent
+                .background(Color.mPaper)
+
+            // Delete zone grows in from the right as user drags
             Button {
-                withAnimation(.easeOut(duration: 0.15)) { offset = 0 }
-                swipedID = nil
                 onDeleteRequest()
             } label: {
-                Rectangle()
-                    .fill(Color.mDestructive)
-                    .frame(width: MSpace.swipeDeleteW)
+                Color.mDestructive
                     .overlay(
                         Text("Delete")
                             .font(.mSans(13, weight: .bold))
                             .foregroundStyle(.white)
+                            .opacity(-offset >= 40 ? 1 : 0)
                     )
             }
+            .frame(width: max(0, -offset))
             .frame(maxHeight: .infinity)
-
-            rowContent
-                .offset(x: offset)
-                .gesture(swipeGesture)
+            .clipped()
         }
+        .contentShape(Rectangle())
         .clipped()
         .overlay(alignment: .bottom) {
             if !isLast { Color.mHairline.frame(height: 1) }
         }
+        .gesture(swipeGesture)
         .onChange(of: swipedID) { _, id in
             if id != entry.id, offset != 0 {
                 withAnimation(.easeOut(duration: 0.2)) { offset = 0 }
@@ -234,22 +236,42 @@ struct LedgerRow: View {
 
             Spacer()
 
-            HStack(alignment: .firstTextBaseline, spacing: 3) {
-                let mag = entry.magnitude
-                Text(mag.number)
+            let mag = entry.magnitude
+            if entry.isToday {
+                Text("Today")
                     .font(.mSerif(MType.rowNumber))
-                    .foregroundStyle(entry.isFuture ? Color.mInk : Color.mPast)
-                    .monospacedDigit()
-                if !mag.unit.isEmpty {
-                    Text(mag.unit)
+                    .foregroundStyle(Color.mInk)
+            } else if entry.isFuture {
+                HStack(alignment: .firstTextBaseline, spacing: 3) {
+                    Text("in")
                         .font(.mSans(MType.rowUnit))
                         .foregroundStyle(Color.mInkSoft)
+                    Text(mag.number)
+                        .font(.mSerif(MType.rowNumber))
+                        .foregroundStyle(Color.mInk)
+                        .monospacedDigit()
+                    if !mag.unit.isEmpty {
+                        Text(mag.unit)
+                            .font(.mSans(MType.rowUnit))
+                            .foregroundStyle(Color.mInkSoft)
+                    }
+                }
+            } else {
+                HStack(alignment: .firstTextBaseline, spacing: 3) {
+                    Text(mag.number)
+                        .font(.mSerif(MType.rowNumber))
+                        .foregroundStyle(Color.mPast)
+                        .monospacedDigit()
+                    if !mag.unit.isEmpty {
+                        Text("\(mag.unit) ago")
+                            .font(.mSans(MType.rowUnit))
+                            .foregroundStyle(Color.mInkSoft)
+                    }
                 }
             }
         }
         .padding(.vertical, MSpace.rowV)
         .padding(.horizontal, MSpace.rowH)
-        .background(Color.mPaper)
         .contentShape(Rectangle())
         .onTapGesture {
             if isSwiped {
