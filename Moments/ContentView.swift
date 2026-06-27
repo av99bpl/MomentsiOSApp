@@ -1,88 +1,129 @@
-//
-//  ContentView.swift
-//  Moments
-//
-//  Created by Anoop Vishwakarma on 6/27/26.
-//
-
 import SwiftUI
-import CoreData
+import SwiftData
 
 struct ContentView: View {
-    @Environment(\.managedObjectContext) private var viewContext
+    @Environment(AppState.self) private var appState
+    @Environment(\.modelContext) private var modelContext
+    @Query private var allEntries: [MomentEntry]
 
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Item.timestamp, ascending: true)],
-        animation: .default)
-    private var items: FetchedResults<Item>
+    @State private var selectedTab: AppTab = .moments
+
+    enum AppTab { case moments, widgets }
+
+    var atLimit: Bool {
+        !appState.isPremium && allEntries.count >= MConstants.freeEntryLimit
+    }
 
     var body: some View {
-        NavigationView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp!, formatter: itemFormatter)")
-                    } label: {
-                        Text(item.timestamp!, formatter: itemFormatter)
-                    }
-                }
-                .onDelete(perform: deleteItems)
-            }
-            .toolbar {
-#if os(iOS)
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-#endif
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
+        ZStack(alignment: .bottom) {
+            // Tab content
+            Group {
+                if selectedTab == .moments {
+                    mainFlow
+                } else {
+                    widgetGalleryPlaceholder
                 }
             }
-            Text("Select an item")
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            // Tab bar (sits above content)
+            tabBar
+                .zIndex(5)
+
+            // Toast above everything
+            if let msg = appState.toastMessage {
+                ToastView(message: msg)
+                    .padding(.bottom, MSpacing.tabBarHeight + 16)
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    .zIndex(20)
+                    .animation(.easeInOut(duration: 0.2), value: appState.toastMessage)
+            }
+        }
+        .ignoresSafeArea(edges: .bottom)
+        // Add/Edit full screen cover
+        .fullScreenCover(isPresented: Bindable(appState).showAddEdit) {
+            AddEditScreen(existingEntry: appState.editingEntry)
+                .environment(appState)
+        }
+        // Paywall full screen cover
+        .fullScreenCover(isPresented: Bindable(appState).showPaywall) {
+            PaywallScreen(atLimit: atLimit)
+                .environment(appState)
         }
     }
 
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(context: viewContext)
-            newItem.timestamp = Date()
+    // MARK: - Main flow (list + detail)
 
-            do {
-                try viewContext.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+    @ViewBuilder
+    var mainFlow: some View {
+        ZStack {
+            // List is always rendered underneath
+            ListScreen()
+
+            // Detail slides over when an entry is selected
+            if appState.showDetail, let entry = appState.selectedEntry {
+                Color.mPaper.ignoresSafeArea()
+                DetailScreen(entry: entry)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .trailing),
+                        removal: .move(edge: .trailing)
+                    ))
             }
+        }
+        .animation(.easeInOut(duration: 0.28), value: appState.showDetail)
+    }
+
+    // MARK: - Widget gallery placeholder
+
+    var widgetGalleryPlaceholder: some View {
+        VStack(spacing: 16) {
+            Color.clear.frame(height: MSpacing.statusBar)
+            Text("WIDGETS")
+                .font(.mSans(MTypography.wordmark, weight: .semibold))
+                .foregroundStyle(Color.mInkSoft)
+                .tracking(1.2)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, MSpacing.screenH + 8)
+
+            Spacer()
+            Text("Widget preview coming soon.")
+                .font(.mSans(15))
+                .foregroundStyle(Color.mInkSoft)
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.mPaper)
+    }
+
+    // MARK: - Tab Bar
+
+    var tabBar: some View {
+        HStack(spacing: 0) {
+            tabButton(tab: .moments, label: "Moments", icon: "calendar")
+            tabButton(tab: .widgets, label: "Widgets", icon: "square.grid.2x2")
+        }
+        .frame(height: MSpacing.tabBarHeight)
+        .background(.ultraThinMaterial)
+        .overlay(alignment: .top) {
+            Color.mHairline.frame(height: 1)
         }
     }
 
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            offsets.map { items[$0] }.forEach(viewContext.delete)
-
-            do {
-                try viewContext.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+    func tabButton(tab: AppTab, label: String, icon: String) -> some View {
+        Button {
+            selectedTab = tab
+        } label: {
+            VStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.system(size: 22, weight: selectedTab == tab ? .medium : .regular))
+                    .foregroundStyle(selectedTab == tab ? Color.mClay : Color.mInkSoft)
+                Text(label)
+                    .font(.mSans(10, weight: .semibold))
+                    .foregroundStyle(selectedTab == tab ? Color.mClay : Color.mInkSoft)
             }
+            .frame(maxWidth: .infinity)
+            .padding(.top, 10)
         }
+        .buttonStyle(.plain)
     }
-}
-
-private let itemFormatter: DateFormatter = {
-    let formatter = DateFormatter()
-    formatter.dateStyle = .short
-    formatter.timeStyle = .medium
-    return formatter
-}()
-
-#Preview {
-    ContentView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
 }
