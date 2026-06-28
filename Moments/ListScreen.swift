@@ -213,7 +213,7 @@ struct LedgerRow: View {
         .overlay(alignment: .bottom) {
             if !isLast { Color.mHairline.frame(height: 1) }
         }
-        .gesture(swipeGesture)
+        .simultaneousGesture(swipeGesture)
         .onChange(of: swipedID) { _, id in
             if id != entry.id, offset != 0 {
                 withAnimation(.easeOut(duration: 0.2)) { offset = 0 }
@@ -299,13 +299,16 @@ struct LedgerRow: View {
     }
 
     var swipeGesture: some Gesture {
-        DragGesture(minimumDistance: 8, coordinateSpace: .local)
+        DragGesture(minimumDistance: 10, coordinateSpace: .local)
             .onChanged { value in
+                // Ignore drags that are more vertical than horizontal
+                guard abs(value.translation.width) > abs(value.translation.height) else { return }
                 let base: CGFloat = isSwiped ? -MSpace.swipeDeleteW : 0
                 let tentative = base + value.translation.width
                 offset = max(-MSpace.swipeDeleteW - 8, min(0, tentative))
             }
             .onEnded { value in
+                guard abs(value.translation.width) > abs(value.translation.height) else { return }
                 let base: CGFloat = isSwiped ? -MSpace.swipeDeleteW : 0
                 let projected = base + value.translation.width
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
