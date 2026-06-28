@@ -82,7 +82,7 @@ struct AddEditScreen: View {
 
             Spacer()
 
-            Text(isEdit ? "Edit Moment" : "Add Moment")
+            Text(isEdit ? "Editing" : "Add Moment")
                 .font(.mSans(MType.navItem, weight: .semibold))
                 .foregroundStyle(Color.mInk)
 
@@ -143,7 +143,7 @@ struct AddEditScreen: View {
 
     var deleteButton: some View {
         Button { showConfirmDelete = true } label: {
-            Text("Delete Moment")
+            Text("Delete This Moment")
                 .font(.mSans(15, weight: .semibold))
                 .foregroundStyle(Color.mDestructive)
                 .frame(maxWidth: .infinity)
