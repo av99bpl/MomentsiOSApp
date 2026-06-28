@@ -75,10 +75,10 @@ extension MomentEntry {
 
     var nextOccurrence: Date {
         let cal = Calendar.current
-        let now = Date()
-        var candidate = date
-        guard recurrence != .none else { return candidate }
-        while candidate < now {
+        let today = cal.startOfDay(for: Date())
+        var candidate = cal.startOfDay(for: date)
+        guard recurrence != .none else { return date }
+        while candidate < today {
             switch recurrence {
             case .none:      break
             case .weekly:    candidate = cal.date(byAdding: .weekOfYear, value: 1, to: candidate)!
@@ -119,6 +119,7 @@ extension MomentEntry {
 
     var listSubtitle: String {
         if recurrence != .none { return recurrence.listLabel }
+        if isToday { return "Today" }
         return isFuture ? "Upcoming" : "Ongoing"
     }
 }

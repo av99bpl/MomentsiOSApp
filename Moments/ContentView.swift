@@ -29,12 +29,14 @@ struct ContentView: View {
         }
         .background(Color.mPaper)
         .overlay(alignment: .bottom) {
-            if let msg = appState.toastMessage {
-                ToastView(message: msg)
-                    .padding(.bottom, MSpace.toastH)
-                    .transition(.opacity.combined(with: .move(edge: .bottom)))
-                    .animation(.easeInOut(duration: 0.2), value: appState.toastMessage)
+            ZStack {
+                if let msg = appState.toastMessage {
+                    ToastView(message: msg)
+                        .padding(.bottom, MSpace.toastH)
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
+                }
             }
+            .animation(.easeInOut(duration: 0.2), value: appState.toastMessage)
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {

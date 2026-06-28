@@ -67,15 +67,8 @@ struct AddEditScreen: View {
             }
         }
         .paperBG()
-        .onAppear {
-            guard !didInit else { return }
-            didInit = true
-            if let e = existingEntry {
-                title = e.title
-                date = e.date
-                recurrence = e.recurrence
-            }
-        }
+        .onAppear { initFormIfReady() }
+        .onChange(of: existingEntry?.id) { initFormIfReady() }
     }
 
     // MARK: - Nav bar
@@ -150,7 +143,7 @@ struct AddEditScreen: View {
 
     var deleteButton: some View {
         Button { showConfirmDelete = true } label: {
-            Text("Delete Date")
+            Text("Delete Moment")
                 .font(.mSans(15, weight: .semibold))
                 .foregroundStyle(Color.mDestructive)
                 .frame(maxWidth: .infinity)
@@ -190,6 +183,16 @@ struct AddEditScreen: View {
             )
             .clipShape(RoundedRectangle(cornerRadius: MSpace.chipRadius))
         }
+    }
+
+    // MARK: - Init helper
+
+    func initFormIfReady() {
+        guard !didInit, let e = existingEntry else { return }
+        didInit = true
+        title = e.title
+        date = e.date
+        recurrence = e.recurrence
     }
 
     // MARK: - Actions

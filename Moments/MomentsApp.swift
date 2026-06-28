@@ -10,17 +10,8 @@ struct MomentsApp: App {
 
     private static let container: ModelContainer = {
         let schema = Schema([MomentEntry.self])
-        let configuration = ModelConfiguration(
-            schema: schema,
-            isStoredInMemoryOnly: false,
-            cloudKitDatabase: .automatic
-        )
-        
-        do {
-            return try ModelContainer(for: schema, configurations: [configuration])
-        } catch {
-            fatalError("Failed to create ModelContainer: \(error)")
-        }
+        let local = ModelConfiguration(schema: schema)
+        return try! ModelContainer(for: schema, configurations: [local])
     }()
 
     var body: some Scene {

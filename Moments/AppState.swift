@@ -38,9 +38,10 @@ final class AppState {
     }
 
     func pin(_ entry: MomentEntry) {
+        let now = Date()
         pinnedEntryID = entry.id
-        pinnedAt = Date()
-        entry.pinnedAt = Date()
+        pinnedAt = now
+        entry.pinnedAt = now
     }
 
     func unpin(entry: MomentEntry? = nil) {
