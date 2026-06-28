@@ -35,36 +35,46 @@ struct ListScreen: View {
     // MARK: - Body
 
     var body: some View {
-        Group {
-            if sorted.isEmpty {
-                EmptyState(onAdd: handleAddTap)
-            } else {
+        if sorted.isEmpty {
+            EmptyState(onAdd: handleAddTap)
+                .paperBG()
+        } else {
+            ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 0) {
                     header
                     heroSection
-                    ledgerScrollView
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                .overlay(alignment: .bottom) { fab }
-            }
-        }
-        .paperBG()
-        .overlay {
-            if let entry = confirmDeleteEntry {
-                ConfirmDeleteSheet(
-                    title: entry.title,
-                    onDelete: {
-                        deleteEntry(entry)
-                        confirmDeleteEntry = nil
-                    },
-                    onCancel: {
-                        confirmDeleteEntry = nil
-                        swipedEntryID = nil
+                    ForEach(Array(ledgerEntries.enumerated()), id: \.element.id) { index, entry in
+                        LedgerRow(
+                            entry: entry,
+                            isLast: index == ledgerEntries.count - 1,
+                            swipedID: $swipedEntryID,
+                            onTap: { onNavigate(.detail(entry.persistentModelID)) },
+                            onDeleteRequest: { confirmDeleteEntry = entry }
+                        )
+                        .padding(.horizontal, MSpace.screenH)
                     }
-                )
-                .transition(.opacity)
-                .zIndex(10)
-                .animation(.easeInOut(duration: 0.2), value: confirmDeleteEntry?.id)
+                    Color.clear.frame(height: MSpace.fabBottom + MSpace.fabSize)
+                }
+            }
+            .overlay(alignment: .bottom) { fab }
+            .paperBG()
+            .overlay {
+                if let entry = confirmDeleteEntry {
+                    ConfirmDeleteSheet(
+                        title: entry.title,
+                        onDelete: {
+                            deleteEntry(entry)
+                            confirmDeleteEntry = nil
+                        },
+                        onCancel: {
+                            confirmDeleteEntry = nil
+                            swipedEntryID = nil
+                        }
+                    )
+                    .transition(.opacity)
+                    .zIndex(10)
+                    .animation(.easeInOut(duration: 0.2), value: confirmDeleteEntry?.id)
+                }
             }
         }
     }
@@ -111,34 +121,6 @@ struct ListScreen: View {
                 .onTapGesture {
                     onNavigate(.detail(hero.persistentModelID))
                 }
-        }
-    }
-
-    // MARK: - Ledger
-
-    var ledgerScrollView: some View {
-        // GeometryReader is greedy — it fills whatever space VStack gives it,
-        // providing an explicit measured frame for the ScrollView so it scrolls.
-        GeometryReader { geo in
-            ScrollView(.vertical, showsIndicators: false) {
-                LazyVStack(spacing: 0) {
-                    ForEach(Array(ledgerEntries.enumerated()), id: \.element.id) { index, entry in
-                        LedgerRow(
-                            entry: entry,
-                            isLast: index == ledgerEntries.count - 1,
-                            swipedID: $swipedEntryID,
-                            onTap: { onNavigate(.detail(entry.persistentModelID)) },
-                            onDeleteRequest: { confirmDeleteEntry = entry }
-                        )
-                        .padding(.horizontal, MSpace.screenH)
-                    }
-                    Color.clear.frame(height: MSpace.fabBottom + MSpace.fabSize)
-                }
-            }
-            .frame(width: geo.size.width, height: geo.size.height)
-            .simultaneousGesture(
-                TapGesture().onEnded { swipedEntryID = nil }
-            )
         }
     }
 
