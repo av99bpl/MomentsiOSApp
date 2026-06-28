@@ -110,7 +110,7 @@ struct AddEditScreen: View {
     var titleField: some View {
         VStack(alignment: .leading, spacing: 4) {
             fieldLabel("Title")
-            TextField("Mom's Birthday", text: $title)
+            TextField("", text: $title)
                 .font(.mSerif(24))
                 .foregroundStyle(Color.mInk)
                 .tint(Color.mInk)
