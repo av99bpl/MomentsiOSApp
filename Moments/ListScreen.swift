@@ -35,7 +35,7 @@ struct ListScreen: View {
     // MARK: - Body
 
     var body: some View {
-        ZStack(alignment: .bottomTrailing) {
+        ZStack {
             if sorted.isEmpty {
                 EmptyState(onAdd: handleAddTap)
             } else {
@@ -44,10 +44,12 @@ struct ListScreen: View {
                     heroSection
                     ledgerScrollView
                 }
-
-                fab
+                .overlay(alignment: .bottomTrailing) {
+                    fab
+                }
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .paperBG()
         .overlay {
             if let entry = confirmDeleteEntry {
@@ -125,8 +127,10 @@ struct ListScreen: View {
                     .padding(.horizontal, MSpace.screenH)
                 }
 
-                Color.clear.frame(height: 100)  // FAB clearance
             }
+        }
+        .safeAreaInset(edge: .bottom) {
+            Color.clear.frame(height: MSpace.fabBottom + MSpace.fabSize)
         }
         .simultaneousGesture(
             TapGesture().onEnded { swipedEntryID = nil }
@@ -230,7 +234,7 @@ struct LedgerRow: View {
                         Text("\(entry.recurrence.listLabel) · \(entry.listDateLabel)")
                     }
                     .font(.mSans(MType.rowSubtitle))
-                    .foregroundStyle(Color.mInkSoft)
+                    .foregroundStyle(Color.mClay)
                 } else {
                     Text(entry.listDateLabel)
                         .font(.mSans(MType.rowSubtitle))
