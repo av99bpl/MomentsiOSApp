@@ -34,7 +34,7 @@ struct AddEditScreen: View {
         ZStack {
             VStack(spacing: 0) {
                 Color.clear.frame(height: MSpace.statusBar)
-                navBar
+                titleBar
 
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 0) {
@@ -48,7 +48,7 @@ struct AddEditScreen: View {
                     }
                     .padding(.horizontal, MSpace.sheetPadH)
                     .padding(.top, 20)
-                    .padding(.bottom, 40)
+                    .padding(.bottom, 20)
                 }
             }
 
@@ -67,35 +67,49 @@ struct AddEditScreen: View {
             }
         }
         .paperBG()
+        .safeAreaInset(edge: .bottom) {
+            bottomBar
+        }
         .onAppear { initFormIfReady() }
         .onChange(of: existingEntry?.id) { initFormIfReady() }
     }
 
-    // MARK: - Nav bar
+    // MARK: - Title bar (top, no actions)
 
-    var navBar: some View {
-        HStack {
+    var titleBar: some View {
+        Text(isEdit ? "Editing" : "Add Moment")
+            .font(.mSans(MType.navItem, weight: .semibold))
+            .foregroundStyle(Color.mInk)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .overlay(alignment: .bottom) { Color.mHairline.frame(height: 1) }
+    }
+
+    // MARK: - Bottom action bar
+
+    var bottomBar: some View {
+        HStack(spacing: MSpace.sheetBtnGap) {
             Button("Cancel") { dismiss() }
-                .font(.mSans(MType.navItem))
-                .foregroundStyle(Color.mInk)
-                .padding(8)
-
-            Spacer()
-
-            Text(isEdit ? "Editing" : "Add Moment")
                 .font(.mSans(MType.navItem, weight: .semibold))
-                .foregroundStyle(Color.mInk)
-
-            Spacer()
+                .foregroundStyle(Color.mInkSoft)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, MSpace.sheetBtnV)
+                .background(Color.mPaperRaised)
+                .clipShape(RoundedRectangle(cornerRadius: MSpace.sheetBtnRadius))
 
             Button("Save") { performSave() }
                 .font(.mSans(MType.navItem, weight: .bold))
-                .foregroundStyle(canSave ? Color.mInk : Color.mHairline)
-                .padding(8)
+                .foregroundStyle(canSave ? Color.mPaper : Color.mInkSoft)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, MSpace.sheetBtnV)
+                .background(canSave ? Color.mInk : Color.mHairline)
+                .clipShape(RoundedRectangle(cornerRadius: MSpace.sheetBtnRadius))
                 .disabled(!canSave)
         }
-        .padding(.horizontal, 8)
-        .padding(.bottom, 8)
+        .padding(.horizontal, MSpace.sheetPadH)
+        .padding(.top, 12)
+        .padding(.bottom, MSpace.sheetPadBottom)
+        .background(Color.mPaper.shadow(.drop(color: .black.opacity(0.06), radius: 8, y: -4)))
     }
 
     // MARK: - Fields
