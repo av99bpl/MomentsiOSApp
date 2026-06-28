@@ -216,6 +216,10 @@ extension View {
 
 // MARK: - App Constants
 
+enum MBuild {
+    static let label = "Jun28-2"
+}
+
 enum MConstants {
     /// Free tier entry cap. Paywall fires on attempt to add entry #11.
     static let freeEntryLimit = 10

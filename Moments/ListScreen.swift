@@ -45,7 +45,7 @@ struct ListScreen: View {
                     ledgerScrollView
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                .overlay(alignment: .bottomTrailing) { fab }
+                .overlay(alignment: .bottom) { fab }
             }
         }
         .paperBG()
@@ -77,6 +77,11 @@ struct ListScreen: View {
                 .font(.mSans(MType.wordmark, weight: .semibold))
                 .foregroundStyle(Color.mInkSoft)
                 .tracking(1.2)
+
+            Text("Build \(MBuild.label)")
+                .font(.mSans(10, weight: .regular))
+                .foregroundStyle(Color.mInkSoft.opacity(0.5))
+                .padding(.leading, 6)
 
             Spacer()
 
@@ -124,12 +129,10 @@ struct ListScreen: View {
                     )
                     .padding(.horizontal, MSpace.screenH)
                 }
-
+                Color.clear.frame(height: MSpace.fabBottom + MSpace.fabSize)
             }
         }
-        .safeAreaInset(edge: .bottom) {
-            Color.clear.frame(height: MSpace.fabBottom + MSpace.fabSize)
-        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .simultaneousGesture(
             TapGesture().onEnded { swipedEntryID = nil }
         )
@@ -148,7 +151,6 @@ struct ListScreen: View {
                 .shadow(color: .black.opacity(0.25), radius: 12, y: 6)
         }
         .padding(.bottom, MSpace.fabBottom)
-        .padding(.trailing, MSpace.fabRight)
     }
 
     // MARK: - Actions
