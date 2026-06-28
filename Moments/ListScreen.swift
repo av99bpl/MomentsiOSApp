@@ -35,7 +35,7 @@ struct ListScreen: View {
     // MARK: - Body
 
     var body: some View {
-        ZStack {
+        Group {
             if sorted.isEmpty {
                 EmptyState(onAdd: handleAddTap)
             } else {
@@ -44,12 +44,10 @@ struct ListScreen: View {
                     heroSection
                     ledgerScrollView
                 }
-                .overlay(alignment: .bottomTrailing) {
-                    fab
-                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .overlay(alignment: .bottomTrailing) { fab }
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .paperBG()
         .overlay {
             if let entry = confirmDeleteEntry {
