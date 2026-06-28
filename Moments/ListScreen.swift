@@ -229,12 +229,17 @@ struct LedgerRow: View {
                     .foregroundStyle(Color.mInk)
                 if entry.recurrence != .none {
                     HStack(spacing: 4) {
+                        Text(entry.listDateLabel)
+                            .foregroundStyle(Color.mInkSoft)
+                        Text("·")
+                            .foregroundStyle(Color.mClay)
                         Image(systemName: "arrow.clockwise")
                             .font(.system(size: 10, weight: .medium))
-                        Text("\(entry.recurrence.listLabel) · \(entry.listDateLabel)")
+                            .foregroundStyle(Color.mClay)
+                        Text(entry.recurrence.listLabel)
+                            .foregroundStyle(Color.mClay)
                     }
                     .font(.mSans(MType.rowSubtitle))
-                    .foregroundStyle(Color.mClay)
                 } else {
                     Text(entry.listDateLabel)
                         .font(.mSans(MType.rowSubtitle))
