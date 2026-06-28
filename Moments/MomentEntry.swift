@@ -46,33 +46,25 @@ enum Recurrence: String, Codable, CaseIterable {
     }
 }
 
-enum Direction: String, Codable {
-    case down = "down"
-    case up   = "up"
-}
-
 // MARK: - MomentEntry
 
 @Model
 final class MomentEntry {
-    var id: UUID
-    var title: String
-    var date: Date
-    var recurrence: Recurrence
-    var direction: Direction
+    var id: UUID = UUID()
+    var title: String = ""
+    var date: Date = Date()
+    var recurrence: Recurrence = Recurrence.none
     var pinnedAt: Date?
 
     init(
         title: String,
         date: Date,
-        recurrence: Recurrence = .none,
-        direction: Direction = .down
+        recurrence: Recurrence = .none
     ) {
         self.id         = UUID()
         self.title      = title
         self.date       = date
         self.recurrence = recurrence
-        self.direction  = direction
         self.pinnedAt   = nil
     }
 }

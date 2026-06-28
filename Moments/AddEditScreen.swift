@@ -18,7 +18,6 @@ struct AddEditScreen: View {
 
     @State private var title: String = ""
     @State private var date: Date = Date()
-    @State private var direction: Direction = .down
     @State private var recurrence: Recurrence = .none
     @State private var showConfirmDelete = false
     @State private var didInit = false
@@ -41,7 +40,6 @@ struct AddEditScreen: View {
                     VStack(alignment: .leading, spacing: 0) {
                         titleField
                         dateField
-                        directionField
                         recurrenceField
 
                         if isEdit {
@@ -75,7 +73,6 @@ struct AddEditScreen: View {
             if let e = existingEntry {
                 title = e.title
                 date = e.date
-                direction = e.direction
                 recurrence = e.recurrence
             }
         }
@@ -92,7 +89,7 @@ struct AddEditScreen: View {
 
             Spacer()
 
-            Text(isEdit ? "Edit Date" : "New Date")
+            Text(isEdit ? "Edit Moment" : "Add Moment")
                 .font(.mSans(MType.navItem, weight: .semibold))
                 .foregroundStyle(Color.mInk)
 
@@ -139,17 +136,6 @@ struct AddEditScreen: View {
         .padding(.bottom, MSpace.formFieldGap)
     }
 
-    var directionField: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            fieldLabel("This date is")
-            HStack(spacing: 10) {
-                segButton("Upcoming", active: direction == .down) { direction = .down }
-                segButton("In the past", active: direction == .up) { direction = .up }
-            }
-        }
-        .padding(.bottom, MSpace.formFieldGap)
-    }
-
     var recurrenceField: some View {
         VStack(alignment: .leading, spacing: 8) {
             fieldLabel("Repeats")
@@ -184,22 +170,6 @@ struct AddEditScreen: View {
             .textCase(.uppercase)
     }
 
-    func segButton(_ label: String, active: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Text(label)
-                .font(.mSans(MType.segButton, weight: .semibold))
-                .foregroundStyle(active ? Color.mPaper : Color.mInk)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, MSpace.segV)
-                .background(active ? Color.mInk : Color.clear)
-                .overlay(
-                    RoundedRectangle(cornerRadius: MSpace.segRadius)
-                        .stroke(active ? Color.mInk : Color.mHairline, lineWidth: 1)
-                )
-                .clipShape(RoundedRectangle(cornerRadius: MSpace.segRadius))
-        }
-    }
-
     func chipButton(_ label: String, active: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 4) {
@@ -230,14 +200,12 @@ struct AddEditScreen: View {
         if let entry = existingEntry {
             entry.title = trimmed
             entry.date = date
-            entry.direction = direction
             entry.recurrence = recurrence
         } else {
             let newEntry = MomentEntry(
                 title: trimmed,
                 date: date,
-                recurrence: recurrence,
-                direction: direction
+                recurrence: recurrence
             )
             modelContext.insert(newEntry)
         }
