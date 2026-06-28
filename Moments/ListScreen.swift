@@ -117,25 +117,29 @@ struct ListScreen: View {
     // MARK: - Ledger
 
     var ledgerScrollView: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            LazyVStack(spacing: 0) {
-                ForEach(Array(ledgerEntries.enumerated()), id: \.element.id) { index, entry in
-                    LedgerRow(
-                        entry: entry,
-                        isLast: index == ledgerEntries.count - 1,
-                        swipedID: $swipedEntryID,
-                        onTap: { onNavigate(.detail(entry.persistentModelID)) },
-                        onDeleteRequest: { confirmDeleteEntry = entry }
-                    )
-                    .padding(.horizontal, MSpace.screenH)
+        // GeometryReader is greedy — it fills whatever space VStack gives it,
+        // providing an explicit measured frame for the ScrollView so it scrolls.
+        GeometryReader { geo in
+            ScrollView(.vertical, showsIndicators: false) {
+                LazyVStack(spacing: 0) {
+                    ForEach(Array(ledgerEntries.enumerated()), id: \.element.id) { index, entry in
+                        LedgerRow(
+                            entry: entry,
+                            isLast: index == ledgerEntries.count - 1,
+                            swipedID: $swipedEntryID,
+                            onTap: { onNavigate(.detail(entry.persistentModelID)) },
+                            onDeleteRequest: { confirmDeleteEntry = entry }
+                        )
+                        .padding(.horizontal, MSpace.screenH)
+                    }
+                    Color.clear.frame(height: MSpace.fabBottom + MSpace.fabSize)
                 }
-                Color.clear.frame(height: MSpace.fabBottom + MSpace.fabSize)
             }
+            .frame(width: geo.size.width, height: geo.size.height)
+            .simultaneousGesture(
+                TapGesture().onEnded { swipedEntryID = nil }
+            )
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .simultaneousGesture(
-            TapGesture().onEnded { swipedEntryID = nil }
-        )
     }
 
     // MARK: - FAB
