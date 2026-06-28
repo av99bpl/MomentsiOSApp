@@ -237,7 +237,7 @@ struct DetailScreen: View {
                 let hasOtherPin = appState.pinnedEntryID != nil && appState.pinnedEntryID != entry.id && !appState.isPinExpired
                 Text(hasOtherPin
                      ? "Replaces the current pin · stays for 7 days"
-                     : "Keeps this at the top for 7 days, however the dates fall")
+                     : "Stays at the top for 7 days")
                     .font(.mSans(MType.reminderConfirm))
                     .foregroundStyle(Color.mInkSoft)
                     .multilineTextAlignment(.center)
