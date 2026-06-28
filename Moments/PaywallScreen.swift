@@ -14,8 +14,6 @@ struct PaywallScreen: View {
 
     private let features = [
         "Unlimited entries",
-        "Custom color for each moment",
-        "Custom icon for each moment",
     ]
 
     var priceLabel: String {
@@ -42,15 +40,6 @@ struct PaywallScreen: View {
                 Spacer()
 
                 VStack(spacing: 0) {
-                    HStack(spacing: MSpace.paywallDotGap) {
-                        ForEach(MAccentColor.all) { accent in
-                            Circle()
-                                .fill(accent.color)
-                                .frame(width: MSpace.paywallDot, height: MSpace.paywallDot)
-                        }
-                    }
-                    .padding(.bottom, 28)
-
                     Text("Moments Unlimited")
                         .font(.mSerif(MType.paywallHead))
                         .foregroundStyle(Color.mInk)

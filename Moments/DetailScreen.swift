@@ -47,7 +47,6 @@ struct DetailScreen: View {
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 0) {
                         countArea(entry: entry, mag: mag, isPinned: isPinned)
-                        reminderSection(entry: entry)
                         pinSection(entry: entry, isPinned: isPinned, pinDaysLeft: pinDaysLeft)
                         Spacer(minLength: 40)
                     }
@@ -85,15 +84,6 @@ struct DetailScreen: View {
             Spacer()
 
             HStack(spacing: 4) {
-                HStack(spacing: 3) {
-                    Image(systemName: "cloud")
-                        .font(.system(size: 12))
-                    Text("Synced")
-                        .font(.mSans(11))
-                }
-                .foregroundStyle(Color.mInkSoft)
-                .padding(.trailing, 4)
-
                 Button { showShare = true } label: {
                     Image(systemName: "square.and.arrow.up")
                         .font(.system(size: 17, weight: .regular))
@@ -192,64 +182,6 @@ struct DetailScreen: View {
                 .foregroundStyle(color)
                 .tracking(0.3)
                 .textCase(.uppercase)
-        }
-    }
-
-    // MARK: - Reminder section
-
-    private func reminderSection(entry: MomentEntry) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 6) {
-                Image(systemName: "bell")
-                    .font(.system(size: 13))
-                Text("REMINDER")
-                    .font(.mSans(MType.fieldLabel, weight: .bold))
-                    .tracking(0.8)
-            }
-            .foregroundStyle(Color.mInkSoft)
-            .padding(.bottom, 10)
-
-            FlowLayout(spacing: MSpace.reminderChipH / 2) {
-                ForEach(ReminderDays.allCases) { day in
-                    let isActive = entry.reminderDays == day.rawValue
-                    Button { setReminder(day, entry: entry) } label: {
-                        Text(day.chipLabel)
-                            .font(.mSans(MType.chip, weight: .semibold))
-                            .foregroundStyle(isActive ? Color.mPaper : Color.mInk)
-                            .padding(.vertical, MSpace.reminderChipV)
-                            .padding(.horizontal, MSpace.reminderChipH)
-                            .background(isActive ? Color.mInk : Color.clear)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: MSpace.reminderChipR)
-                                    .stroke(isActive ? Color.mInk : Color.mHairline, lineWidth: 1)
-                            )
-                            .clipShape(RoundedRectangle(cornerRadius: MSpace.reminderChipR))
-                    }
-                }
-            }
-
-            if entry.reminderDays > 0,
-               let day = ReminderDays(rawValue: entry.reminderDays) {
-                Text("Reminder set \(day.confirmationLabel) · \(entry.title)")
-                    .font(.mSans(MType.reminderConfirm))
-                    .foregroundStyle(Color.mInkSoft)
-                    .padding(.top, 8)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.bottom, MSpace.reminderTop)
-    }
-
-    private func setReminder(_ day: ReminderDays, entry: MomentEntry) {
-        if day == .none {
-            entry.reminderDays = 0
-            cancelReminder(for: entry)
-        } else {
-            requestNotificationPermission { granted in
-                guard granted else { return }
-                entry.reminderDays = day.rawValue
-                scheduleReminder(for: entry)
-            }
         }
     }
 

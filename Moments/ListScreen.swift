@@ -73,15 +73,10 @@ struct ListScreen: View {
 
     var header: some View {
         HStack(spacing: 0) {
-            HStack(spacing: 6) {
-                Text("MOMENTS")
-                    .font(.mSans(MType.wordmark, weight: .semibold))
-                    .foregroundStyle(Color.mInkSoft)
-                    .tracking(1.2)
-                Image(systemName: "cloud")
-                    .font(.system(size: 13, weight: .regular))
-                    .foregroundStyle(Color.mInkSoft)
-            }
+            Text("MOMENTS")
+                .font(.mSans(MType.wordmark, weight: .semibold))
+                .foregroundStyle(Color.mInkSoft)
+                .tracking(1.2)
 
             Spacer()
 
@@ -168,7 +163,6 @@ struct ListScreen: View {
         if appState.pinnedEntryID == entry.id {
             appState.unpin(entry: entry)
         }
-        cancelReminder(for: entry)
         let title = entry.title
         modelContext.delete(entry)
         swipedEntryID = nil

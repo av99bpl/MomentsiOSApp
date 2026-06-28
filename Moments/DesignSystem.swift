@@ -35,26 +35,6 @@ extension Color {
     static let mDestructive = Color(hex: "A8472E")
 }
 
-// MARK: - Premium Accent Palette
-// 6-color muted palette for per-entry color customization (premium only).
-// All tones are low-saturation, in the same warm-neutral family as clay.
-
-struct MAccentColor: Identifiable, Hashable {
-    let id: String
-    let color: Color
-    let hex: String
-
-    static let all: [MAccentColor] = [
-        MAccentColor(id: "clay",  color: Color(hex: "B8693F"), hex: "B8693F"),
-        MAccentColor(id: "sage",  color: Color(hex: "7C8A6E"), hex: "7C8A6E"),
-        MAccentColor(id: "dusk",  color: Color(hex: "6E7691"), hex: "6E7691"),
-        MAccentColor(id: "plum",  color: Color(hex: "8A6378"), hex: "8A6378"),
-        MAccentColor(id: "ochre", color: Color(hex: "B68A3D"), hex: "B68A3D"),
-        MAccentColor(id: "slate", color: Color(hex: "5C6B6B"), hex: "5C6B6B"),
-    ]
-    static let `default` = all[0]
-}
-
 // MARK: - Typography
 
 extension Font {

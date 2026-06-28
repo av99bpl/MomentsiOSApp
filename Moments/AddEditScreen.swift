@@ -6,8 +6,6 @@
 import SwiftUI
 import SwiftData
 
-private let iconOptions = ["🎂", "💍", "🎉", "✈️", "🏠", "💼", "🩺", "🌱"]
-
 struct AddEditScreen: View {
     let existingID: PersistentIdentifier?
     let onNavigate: (NavDest) -> Void
@@ -22,8 +20,6 @@ struct AddEditScreen: View {
     @State private var date: Date = Date()
     @State private var direction: Direction = .down
     @State private var recurrence: Recurrence = .none
-    @State private var accentID: String = "clay"
-    @State private var icon: String? = nil
     @State private var showConfirmDelete = false
     @State private var didInit = false
 
@@ -47,7 +43,6 @@ struct AddEditScreen: View {
                         dateField
                         directionField
                         recurrenceField
-                        customizationField
 
                         if isEdit {
                             deleteButton
@@ -82,8 +77,6 @@ struct AddEditScreen: View {
                 date = e.date
                 direction = e.direction
                 recurrence = e.recurrence
-                accentID = e.accentID
-                icon = e.icon
             }
         }
     }
@@ -169,69 +162,6 @@ struct AddEditScreen: View {
         .padding(.bottom, MSpace.formFieldGap)
     }
 
-    var customizationField: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 6) {
-                fieldLabel("Color & Icon")
-                if !appState.isPremium {
-                    Image(systemName: "lock")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(Color.mInkSoft)
-                        .offset(y: -8)
-                }
-            }
-
-            HStack(spacing: 10) {
-                ForEach(MAccentColor.all) { accent in
-                    Button { accentID = accent.id } label: {
-                        Circle()
-                            .fill(accent.color)
-                            .frame(width: MSpace.accentDot, height: MSpace.accentDot)
-                            .overlay(
-                                Circle()
-                                    .stroke(Color.mPaper, lineWidth: 2)
-                                    .padding(1)
-                                    .opacity(accentID == accent.id ? 1 : 0)
-                            )
-                            .overlay(
-                                Circle()
-                                    .stroke(Color.mInk, lineWidth: accentID == accent.id ? 2 : 0)
-                            )
-                    }
-                    .disabled(!appState.isPremium)
-                }
-            }
-            .opacity(appState.isPremium ? 1 : 0.35)
-
-            let cols = Array(repeating: GridItem(.fixed(MSpace.iconBtn), spacing: 8), count: 8)
-            LazyVGrid(columns: cols, spacing: 8) {
-                ForEach(iconOptions, id: \.self) { emoji in
-                    Button { icon = (icon == emoji) ? nil : emoji } label: {
-                        Text(emoji)
-                            .font(.system(size: 17))
-                            .frame(width: MSpace.iconBtn, height: MSpace.iconBtn)
-                            .background(icon == emoji ? Color.mPaperRaised : Color.clear)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: MSpace.iconBtnRadius)
-                                    .stroke(icon == emoji ? Color.mInk : Color.mHairline, lineWidth: 1)
-                            )
-                            .clipShape(RoundedRectangle(cornerRadius: MSpace.iconBtnRadius))
-                    }
-                    .disabled(!appState.isPremium)
-                }
-            }
-            .opacity(appState.isPremium ? 1 : 0.35)
-        }
-        .overlay {
-            if !appState.isPremium {
-                Color.clear
-                    .contentShape(Rectangle())
-                    .onTapGesture { onNavigate(.paywall) }
-            }
-        }
-        .padding(.bottom, MSpace.formFieldGap)
-    }
-
     var deleteButton: some View {
         Button { showConfirmDelete = true } label: {
             Text("Delete Date")
@@ -302,17 +232,12 @@ struct AddEditScreen: View {
             entry.date = date
             entry.direction = direction
             entry.recurrence = recurrence
-            entry.accentID = accentID
-            entry.icon = icon
-            scheduleReminder(for: entry)
         } else {
             let newEntry = MomentEntry(
                 title: trimmed,
                 date: date,
                 recurrence: recurrence,
-                direction: direction,
-                accentID: accentID,
-                icon: icon
+                direction: direction
             )
             modelContext.insert(newEntry)
         }
@@ -323,7 +248,6 @@ struct AddEditScreen: View {
         if appState.pinnedEntryID == entry.id {
             appState.unpin(entry: entry)
         }
-        cancelReminder(for: entry)
         let title = entry.title
         modelContext.delete(entry)
         appState.showToast("Deleted \"\(title)\"")
