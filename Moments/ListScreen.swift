@@ -1,8 +1,5 @@
 // ListScreen.swift
 // Moments
-//
-// Root screen. Hero card is OUTSIDE the scroll view — fixed position.
-// Only the ledger rows scroll.
 
 import SwiftUI
 import SwiftData
@@ -14,7 +11,6 @@ struct ListScreen: View {
 
     let onNavigate: (NavDest) -> Void
 
-    @State private var swipedEntryID: UUID? = nil
     @State private var confirmDeleteEntry: MomentEntry? = nil
 
     // MARK: - Computed
@@ -39,23 +35,43 @@ struct ListScreen: View {
             EmptyState(onAdd: handleAddTap)
                 .paperBG()
         } else {
-            ScrollView(.vertical, showsIndicators: false) {
-                VStack(spacing: 0) {
-                    header
-                    heroSection
-                    ForEach(Array(ledgerEntries.enumerated()), id: \.element.id) { index, entry in
-                        LedgerRow(
-                            entry: entry,
-                            isLast: index == ledgerEntries.count - 1,
-                            swipedID: $swipedEntryID,
-                            onTap: { onNavigate(.detail(entry.persistentModelID)) },
-                            onDeleteRequest: { confirmDeleteEntry = entry }
-                        )
-                        .padding(.horizontal, MSpace.screenH)
+            List {
+                header
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+
+                heroSection
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+
+                ForEach(ledgerEntries) { entry in
+                    LedgerRow(
+                        entry: entry,
+                        onTap: { onNavigate(.detail(entry.persistentModelID)) }
+                    )
+                    .listRowInsets(EdgeInsets(top: 0, leading: MSpace.screenH, bottom: 0, trailing: MSpace.screenH))
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                        Button(role: .destructive) {
+                            confirmDeleteEntry = entry
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
                     }
-                    Color.clear.frame(height: MSpace.fabBottom + MSpace.fabSize)
                 }
+
+                Color.clear.frame(height: MSpace.fabBottom + MSpace.fabSize)
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .scrollIndicators(.hidden)
+            .background(Color.clear)
             .overlay(alignment: .bottom) { fab }
             .paperBG()
             .overlay {
@@ -66,10 +82,7 @@ struct ListScreen: View {
                             deleteEntry(entry)
                             confirmDeleteEntry = nil
                         },
-                        onCancel: {
-                            confirmDeleteEntry = nil
-                            swipedEntryID = nil
-                        }
+                        onCancel: { confirmDeleteEntry = nil }
                     )
                     .transition(.opacity)
                     .zIndex(10)
@@ -155,7 +168,6 @@ struct ListScreen: View {
         }
         let title = entry.title
         modelContext.delete(entry)
-        swipedEntryID = nil
         appState.showToast("Deleted \"\(title)\"")
     }
 }
@@ -164,50 +176,9 @@ struct ListScreen: View {
 
 struct LedgerRow: View {
     let entry: MomentEntry
-    let isLast: Bool
-    @Binding var swipedID: UUID?
     let onTap: () -> Void
-    let onDeleteRequest: () -> Void
-
-    @State private var offset: CGFloat = 0
-    var isSwiped: Bool { swipedID == entry.id }
 
     var body: some View {
-        ZStack(alignment: .trailing) {
-            // Row content — stays fixed in place, never shifts
-            rowContent
-                .background(Color.mPaper)
-
-            // Delete zone grows in from the right as user drags
-            Button {
-                onDeleteRequest()
-            } label: {
-                Color.mDestructive
-                    .overlay(
-                        Text("Delete")
-                            .font(.mSans(13, weight: .bold))
-                            .foregroundStyle(.white)
-                            .opacity(-offset >= 40 ? 1 : 0)
-                    )
-            }
-            .frame(width: max(0, -offset))
-            .frame(maxHeight: .infinity)
-            .clipped()
-        }
-        .contentShape(Rectangle())
-        .clipped()
-        .overlay(alignment: .bottom) {
-            if !isLast { Color.mHairline.frame(height: 1) }
-        }
-        .simultaneousGesture(swipeGesture)
-        .onChange(of: swipedID) { _, id in
-            if id != entry.id, offset != 0 {
-                withAnimation(.easeOut(duration: 0.2)) { offset = 0 }
-            }
-        }
-    }
-
-    var rowContent: some View {
         HStack(alignment: .center, spacing: 0) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(entry.title)
@@ -272,40 +243,9 @@ struct LedgerRow: View {
         .padding(.vertical, MSpace.rowV)
         .padding(.horizontal, MSpace.rowH)
         .contentShape(Rectangle())
-        .onTapGesture {
-            if isSwiped {
-                withAnimation(.easeOut(duration: 0.2)) {
-                    offset = 0
-                    swipedID = nil
-                }
-            } else {
-                onTap()
-            }
+        .onTapGesture { onTap() }
+        .overlay(alignment: .bottom) {
+            Color.mHairline.frame(height: 1)
         }
-    }
-
-    var swipeGesture: some Gesture {
-        DragGesture(minimumDistance: 10, coordinateSpace: .local)
-            .onChanged { value in
-                // Ignore drags that are more vertical than horizontal
-                guard abs(value.translation.width) > abs(value.translation.height) else { return }
-                let base: CGFloat = isSwiped ? -MSpace.swipeDeleteW : 0
-                let tentative = base + value.translation.width
-                offset = max(-MSpace.swipeDeleteW - 8, min(0, tentative))
-            }
-            .onEnded { value in
-                guard abs(value.translation.width) > abs(value.translation.height) else { return }
-                let base: CGFloat = isSwiped ? -MSpace.swipeDeleteW : 0
-                let projected = base + value.translation.width
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    if projected < -(MSpace.swipeDeleteW / 2) {
-                        offset = -MSpace.swipeDeleteW
-                        swipedID = entry.id
-                    } else {
-                        offset = 0
-                        if swipedID == entry.id { swipedID = nil }
-                    }
-                }
-            }
     }
 }
