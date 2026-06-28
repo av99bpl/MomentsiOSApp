@@ -117,9 +117,11 @@ extension MomentEntry {
         return max(0, Int(ceil(remaining / 86400)))
     }
 
-    var listSubtitle: String {
-        if recurrence != .none { return recurrence.listLabel }
-        if isToday { return "Today" }
-        return isFuture ? "Upcoming" : "Ongoing"
+    var listDateLabel: String {
+        let cal = Calendar.current
+        let diffYear = cal.component(.year, from: nextOccurrence) != cal.component(.year, from: Date())
+        return diffYear
+            ? nextOccurrence.formatted(.dateTime.month(.abbreviated).day().year())
+            : nextOccurrence.formatted(.dateTime.month(.abbreviated).day())
     }
 }

@@ -223,9 +223,19 @@ struct LedgerRow: View {
                 Text(entry.title)
                     .font(.mSans(MType.rowTitle, weight: .medium))
                     .foregroundStyle(Color.mInk)
-                Text(entry.listSubtitle)
+                if entry.recurrence != .none {
+                    HStack(spacing: 4) {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 10, weight: .medium))
+                        Text("\(entry.recurrence.listLabel) · \(entry.listDateLabel)")
+                    }
                     .font(.mSans(MType.rowSubtitle))
                     .foregroundStyle(Color.mInkSoft)
+                } else {
+                    Text(entry.listDateLabel)
+                        .font(.mSans(MType.rowSubtitle))
+                        .foregroundStyle(Color.mInkSoft)
+                }
             }
 
             Spacer()
