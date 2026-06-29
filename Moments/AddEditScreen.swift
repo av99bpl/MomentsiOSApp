@@ -17,6 +17,7 @@ struct AddEditScreen: View {
     @State private var date: Date = Date()
     @State private var recurrence: Recurrence = .none
     @State private var didInit = false
+    @FocusState private var titleFocused: Bool
 
     var existingEntry: MomentEntry? {
         guard let id = existingID else { return nil }
@@ -58,32 +59,38 @@ struct AddEditScreen: View {
                 )
                 .padding(.horizontal, MSpace.heroMargin)
                 .padding(.top, 16)
-
-                // Cancel / Save — outside the card, circle icon buttons
-                HStack(spacing: 16) {
-                    Button { dismiss() } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 17, weight: .semibold))
-                            .foregroundStyle(Color.mInkSoft)
-                            .frame(width: 46, height: 46)
-                            .overlay(Circle().stroke(Color.mHairline, lineWidth: 1))
-                    }
-
-                    Button { performSave() } label: {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 17, weight: .bold))
-                            .foregroundStyle(canSave ? Color.mInk : Color.mInkSoft)
-                            .frame(width: 46, height: 46)
-                            .overlay(Circle().stroke(canSave ? Color.mInk : Color.mHairline, lineWidth: 1))
-                    }
-                    .disabled(!canSave)
-                }
-                .padding(.top, 20)
-                .padding(.bottom, MSpace.sheetPadBottom)
             }
         }
+        .safeAreaInset(edge: .bottom) {
+            // Buttons float above the keyboard via safeAreaInset
+            HStack(spacing: 16) {
+                Button { dismiss() } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(Color.mInkSoft)
+                        .frame(width: 46, height: 46)
+                        .overlay(Circle().stroke(Color.mHairline, lineWidth: 1))
+                }
+
+                Button { performSave() } label: {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 17, weight: .bold))
+                        .foregroundStyle(canSave ? Color.mInk : Color.mInkSoft)
+                        .frame(width: 46, height: 46)
+                        .overlay(Circle().stroke(canSave ? Color.mInk : Color.mHairline, lineWidth: 1))
+                }
+                .disabled(!canSave)
+            }
+            .padding(.top, 16)
+            .padding(.bottom, MSpace.sheetPadBottom)
+            .frame(maxWidth: .infinity)
+            .background(Color.mPaper.opacity(0.001)) // keeps the inset area stable
+        }
         .paperBG()
-        .onAppear { initFormIfReady() }
+        .onAppear {
+            initFormIfReady()
+            if !isEdit { titleFocused = true }
+        }
         .onChange(of: existingEntry?.id) { initFormIfReady() }
     }
 
@@ -96,6 +103,7 @@ struct AddEditScreen: View {
                 .font(.mSerif(24))
                 .foregroundStyle(Color.mInk)
                 .tint(Color.mInk)
+                .focused($titleFocused)
                 .padding(.vertical, 8)
                 .padding(.bottom, 6)
                 .overlay(alignment: .bottom) { Color.mHairline.frame(height: 1) }
