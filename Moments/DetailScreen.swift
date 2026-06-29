@@ -11,10 +11,12 @@ struct DetailScreen: View {
     let onNavigate: (NavDest) -> Void
 
     @Environment(AppState.self) private var appState
+    @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Query private var allEntries: [MomentEntry]
 
     @State private var showShare = false
+    @State private var showConfirmDelete = false
 
     var entry: MomentEntry? {
         allEntries.first { $0.persistentModelID == entryID }
@@ -48,6 +50,7 @@ struct DetailScreen: View {
                     VStack(spacing: 0) {
                         countArea(entry: entry, mag: mag, isPinned: isPinned)
                         pinSection(entry: entry, isPinned: isPinned, pinDaysLeft: pinDaysLeft)
+                        actionButtons(entry: entry)
                         Spacer(minLength: 40)
                     }
                     .padding(.horizontal, MSpace.screenH + 8)
@@ -59,6 +62,17 @@ struct DetailScreen: View {
                     .transition(.opacity)
                     .zIndex(10)
                     .animation(.easeInOut(duration: 0.2), value: showShare)
+            }
+
+            if showConfirmDelete {
+                ConfirmDeleteSheet(
+                    title: entry.title,
+                    onDelete: { deleteEntry(entry) },
+                    onCancel: { showConfirmDelete = false }
+                )
+                .transition(.opacity)
+                .zIndex(11)
+                .animation(.easeInOut(duration: 0.2), value: showConfirmDelete)
             }
         }
         .paperBG()
@@ -83,23 +97,11 @@ struct DetailScreen: View {
 
             Spacer()
 
-            HStack(spacing: 4) {
-                Button { showShare = true } label: {
-                    Image(systemName: "square.and.arrow.up")
-                        .font(.system(size: 17, weight: .regular))
-                        .foregroundStyle(Color.mInk)
-                }
-                .padding(.horizontal, 6)
-                .padding(.vertical, 8)
-
-                Button {
-                    onNavigate(.addEdit(entry.persistentModelID))
-                } label: {
-                    Text("Edit")
-                        .font(.mSans(MType.navItem, weight: .bold))
-                        .foregroundStyle(Color.mInk)
-                }
-                .padding(8)
+            Button { showShare = true } label: {
+                Image(systemName: "square.and.arrow.up")
+                    .font(.system(size: 17, weight: .regular))
+                    .foregroundStyle(Color.mInk)
+                    .padding(8)
             }
         }
         .padding(.horizontal, 8)
@@ -147,6 +149,39 @@ struct DetailScreen: View {
         .multilineTextAlignment(.center)
         .frame(maxWidth: .infinity)
         .padding(.bottom, 32)
+    }
+
+    // MARK: - Action buttons (trash + pencil)
+
+    private func actionButtons(entry: MomentEntry) -> some View {
+        HStack(spacing: 16) {
+            Button { showConfirmDelete = true } label: {
+                Image(systemName: "trash")
+                    .font(.system(size: 17, weight: .regular))
+                    .foregroundStyle(Color.mInk)
+                    .frame(width: 46, height: 46)
+                    .overlay(Circle().stroke(Color.mHairline, lineWidth: 1))
+            }
+
+            Button { onNavigate(.addEdit(entry.persistentModelID)) } label: {
+                Image(systemName: "pencil")
+                    .font(.system(size: 17, weight: .regular))
+                    .foregroundStyle(Color.mInk)
+                    .frame(width: 46, height: 46)
+                    .overlay(Circle().stroke(Color.mHairline, lineWidth: 1))
+            }
+        }
+        .padding(.top, 28)
+    }
+
+    private func deleteEntry(_ entry: MomentEntry) {
+        if appState.pinnedEntryID == entry.id {
+            appState.unpin(entry: entry)
+        }
+        let title = entry.title
+        modelContext.delete(entry)
+        appState.showToast("Deleted \"\(title)\"")
+        dismiss()
     }
 
     private func countPill(entry: MomentEntry, mag: MagnitudeResult) -> some View {
