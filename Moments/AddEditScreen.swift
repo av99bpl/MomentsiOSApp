@@ -59,30 +59,25 @@ struct AddEditScreen: View {
                 .padding(.horizontal, MSpace.heroMargin)
                 .padding(.top, 16)
 
-                // Cancel / Save — outside the card, outline style
-                HStack(spacing: MSpace.sheetBtnGap) {
-                    Button("Cancel") { dismiss() }
-                        .font(.mSans(MType.navItem, weight: .semibold))
-                        .foregroundStyle(Color.mInkSoft)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 13)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 22)
-                                .stroke(Color.mHairline, lineWidth: 1)
-                        )
+                // Cancel / Save — outside the card, circle icon buttons
+                HStack(spacing: 16) {
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundStyle(Color.mInkSoft)
+                            .frame(width: 46, height: 46)
+                            .overlay(Circle().stroke(Color.mHairline, lineWidth: 1))
+                    }
 
-                    Button("Save") { performSave() }
-                        .font(.mSans(MType.navItem, weight: .bold))
-                        .foregroundStyle(canSave ? Color.mInk : Color.mInkSoft)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 13)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 22)
-                                .stroke(canSave ? Color.mInk : Color.mHairline, lineWidth: 1)
-                        )
-                        .disabled(!canSave)
+                    Button { performSave() } label: {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 17, weight: .bold))
+                            .foregroundStyle(canSave ? Color.mInk : Color.mInkSoft)
+                            .frame(width: 46, height: 46)
+                            .overlay(Circle().stroke(canSave ? Color.mInk : Color.mHairline, lineWidth: 1))
+                    }
+                    .disabled(!canSave)
                 }
-                .padding(.horizontal, MSpace.heroMargin)
                 .padding(.top, 20)
                 .padding(.bottom, MSpace.sheetPadBottom)
             }

@@ -48,12 +48,26 @@ struct DetailScreen: View {
 
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 0) {
+                        // Card — same style as hero card and add/edit screen
                         countArea(entry: entry, mag: mag, isPinned: isPinned)
+                            .padding(.top, 28)
+                            .padding(.horizontal, MSpace.heroPadH)
+                            .padding(.bottom, 28)
+                            .paperRaisedBG()
+                            .clipShape(RoundedRectangle(cornerRadius: MSpace.heroRadius))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: MSpace.heroRadius)
+                                    .stroke(Color.mHairline, lineWidth: 1)
+                            )
+                            .padding(.horizontal, MSpace.heroMargin)
+                            .padding(.top, 16)
+
+                        // Outside card
                         pinSection(entry: entry, isPinned: isPinned, pinDaysLeft: pinDaysLeft)
+                            .padding(.horizontal, MSpace.screenH + 8)
                         actionButtons(entry: entry)
                         Spacer(minLength: 40)
                     }
-                    .padding(.horizontal, MSpace.screenH + 8)
                 }
             }
 
@@ -148,7 +162,6 @@ struct DetailScreen: View {
         }
         .multilineTextAlignment(.center)
         .frame(maxWidth: .infinity)
-        .padding(.bottom, 32)
     }
 
     // MARK: - Action buttons (trash + pencil)
@@ -165,7 +178,7 @@ struct DetailScreen: View {
 
             Button { onNavigate(.addEdit(entry.persistentModelID)) } label: {
                 Image(systemName: "pencil")
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.system(size: 17, weight: .bold))
                     .foregroundStyle(Color.mInk)
                     .frame(width: 46, height: 46)
                     .overlay(Circle().stroke(Color.mHairline, lineWidth: 1))
