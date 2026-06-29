@@ -54,8 +54,7 @@ struct ContentView: View {
         case .addEdit(let id):
             AddEditScreen(
                 existingID: id,
-                onNavigate: { navPath.append($0) },
-                onDeleteComplete: { navPath.removeAll() }
+                onNavigate: { navPath.append($0) }
             )
             .toolbar(.hidden, for: .navigationBar)
         case .paywall:
