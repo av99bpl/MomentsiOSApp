@@ -62,7 +62,8 @@ struct PaywallScreen: View {
                         .lineSpacing(4)
                         .padding(.bottom, 36)
 
-                    VStack(spacing: 0) {
+                    // Card — same style as hero/detail/add screens
+                    VStack(alignment: .leading, spacing: 0) {
                         ForEach(features, id: \.self) { feature in
                             HStack(spacing: 12) {
                                 Circle()
@@ -81,16 +82,13 @@ struct PaywallScreen: View {
                             .padding(.vertical, 10)
                             .overlay(alignment: .bottom) { Color.mHairline.frame(height: 1) }
                         }
-                    }
-                    .padding(.bottom, 24)
 
-                    // Coming Soon
-                    VStack(alignment: .leading, spacing: 0) {
                         Text("Coming Soon")
                             .font(.mSans(MType.fieldLabel, weight: .semibold))
                             .foregroundStyle(Color.mInkSoft)
                             .tracking(1)
                             .textCase(.uppercase)
+                            .padding(.top, 20)
                             .padding(.bottom, 10)
 
                         ForEach(comingSoon, id: \.self) { item in
@@ -112,8 +110,15 @@ struct PaywallScreen: View {
                             .overlay(alignment: .bottom) { Color.mHairline.frame(height: 1) }
                         }
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.bottom, 36)
+                    .padding(.horizontal, MSpace.heroPadH)
+                    .padding(.vertical, 20)
+                    .paperRaisedBG()
+                    .clipShape(RoundedRectangle(cornerRadius: MSpace.heroRadius))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: MSpace.heroRadius)
+                            .stroke(Color.mHairline, lineWidth: 1)
+                    )
+                    .padding(.bottom, 28)
 
                     Button {
                         Task { await purchase() }
