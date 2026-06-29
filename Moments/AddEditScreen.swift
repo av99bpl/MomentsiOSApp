@@ -1,7 +1,5 @@
 // AddEditScreen.swift
 // Moments
-//
-// Pushed onto NavigationStack. nil existingID = add mode.
 
 import SwiftUI
 import SwiftData
@@ -9,7 +7,6 @@ import SwiftData
 struct AddEditScreen: View {
     let existingID: PersistentIdentifier?
     let onNavigate: (NavDest) -> Void
-    let onDeleteComplete: () -> Void
 
     @Environment(AppState.self) private var appState
     @Environment(\.modelContext) private var modelContext
@@ -19,7 +16,6 @@ struct AddEditScreen: View {
     @State private var title: String = ""
     @State private var date: Date = Date()
     @State private var recurrence: Recurrence = .none
-    @State private var showConfirmDelete = false
     @State private var didInit = false
 
     var existingEntry: MomentEntry? {
@@ -31,85 +27,69 @@ struct AddEditScreen: View {
     var canSave: Bool { !title.trimmingCharacters(in: .whitespaces).isEmpty }
 
     var body: some View {
-        ZStack {
+        ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 0) {
                 Color.clear.frame(height: MSpace.statusBar)
-                titleBar
 
-                ScrollView(.vertical, showsIndicators: false) {
+                // Card — same style as hero card
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(isEdit ? "Editing" : "Add Moment")
+                        .font(.mSans(MType.navItem, weight: .semibold))
+                        .foregroundStyle(Color.mInk)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 16)
+                        .overlay(alignment: .bottom) { Color.mHairline.frame(height: 1) }
+
                     VStack(alignment: .leading, spacing: 0) {
                         titleField
                         dateField
                         recurrenceField
-
-                        if isEdit {
-                            deleteButton
-                        }
                     }
                     .padding(.horizontal, MSpace.sheetPadH)
                     .padding(.top, 20)
-                    .padding(.bottom, 20)
+                    .padding(.bottom, 28)
                 }
-            }
-
-            if showConfirmDelete, let entry = existingEntry {
-                ConfirmDeleteSheet(
-                    title: entry.title,
-                    onDelete: {
-                        performDelete(entry)
-                        showConfirmDelete = false
-                    },
-                    onCancel: { showConfirmDelete = false }
+                .frame(maxWidth: .infinity)
+                .paperRaisedBG()
+                .clipShape(RoundedRectangle(cornerRadius: MSpace.heroRadius))
+                .overlay(
+                    RoundedRectangle(cornerRadius: MSpace.heroRadius)
+                        .stroke(Color.mHairline, lineWidth: 1)
                 )
-                .transition(.opacity)
-                .zIndex(10)
-                .animation(.easeInOut(duration: 0.2), value: showConfirmDelete)
+                .padding(.horizontal, MSpace.heroMargin)
+                .padding(.top, 16)
+
+                // Cancel / Save — outside the card, outline style
+                HStack(spacing: MSpace.sheetBtnGap) {
+                    Button("Cancel") { dismiss() }
+                        .font(.mSans(MType.navItem, weight: .semibold))
+                        .foregroundStyle(Color.mInkSoft)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 13)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 22)
+                                .stroke(Color.mHairline, lineWidth: 1)
+                        )
+
+                    Button("Save") { performSave() }
+                        .font(.mSans(MType.navItem, weight: .bold))
+                        .foregroundStyle(canSave ? Color.mInk : Color.mInkSoft)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 13)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 22)
+                                .stroke(canSave ? Color.mInk : Color.mHairline, lineWidth: 1)
+                        )
+                        .disabled(!canSave)
+                }
+                .padding(.horizontal, MSpace.heroMargin)
+                .padding(.top, 20)
+                .padding(.bottom, MSpace.sheetPadBottom)
             }
         }
         .paperBG()
-        .safeAreaInset(edge: .bottom) {
-            bottomBar
-        }
         .onAppear { initFormIfReady() }
         .onChange(of: existingEntry?.id) { initFormIfReady() }
-    }
-
-    // MARK: - Title bar (top, no actions)
-
-    var titleBar: some View {
-        Text(isEdit ? "Editing" : "Add Moment")
-            .font(.mSans(MType.navItem, weight: .semibold))
-            .foregroundStyle(Color.mInk)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .overlay(alignment: .bottom) { Color.mHairline.frame(height: 1) }
-    }
-
-    // MARK: - Bottom action bar
-
-    var bottomBar: some View {
-        HStack(spacing: MSpace.sheetBtnGap) {
-            Button("Cancel") { dismiss() }
-                .font(.mSans(MType.navItem, weight: .semibold))
-                .foregroundStyle(Color.mInkSoft)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, MSpace.sheetBtnV)
-                .background(Color.mPaperRaised)
-                .clipShape(RoundedRectangle(cornerRadius: MSpace.sheetBtnRadius))
-
-            Button("Save") { performSave() }
-                .font(.mSans(MType.navItem, weight: .bold))
-                .foregroundStyle(canSave ? Color.mPaper : Color.mInkSoft)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, MSpace.sheetBtnV)
-                .background(canSave ? Color.mInk : Color.mHairline)
-                .clipShape(RoundedRectangle(cornerRadius: MSpace.sheetBtnRadius))
-                .disabled(!canSave)
-        }
-        .padding(.horizontal, MSpace.sheetPadH)
-        .padding(.top, 12)
-        .padding(.bottom, MSpace.sheetPadBottom)
-        .background(Color.mPaper.shadow(.drop(color: .black.opacity(0.06), radius: 8, y: -4)))
     }
 
     // MARK: - Fields
@@ -155,18 +135,6 @@ struct AddEditScreen: View {
         .padding(.bottom, MSpace.formFieldGap)
     }
 
-    var deleteButton: some View {
-        Button { showConfirmDelete = true } label: {
-            Text("Delete This Moment")
-                .font(.mSans(15, weight: .semibold))
-                .foregroundStyle(Color.mDestructive)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-        }
-        .padding(.top, 12)
-        .padding(.bottom, 16)
-    }
-
     // MARK: - Helpers
 
     func fieldLabel(_ text: String) -> some View {
@@ -199,8 +167,6 @@ struct AddEditScreen: View {
         }
     }
 
-    // MARK: - Init helper
-
     func initFormIfReady() {
         guard !didInit, let e = existingEntry else { return }
         didInit = true
@@ -219,23 +185,9 @@ struct AddEditScreen: View {
             entry.date = date
             entry.recurrence = recurrence
         } else {
-            let newEntry = MomentEntry(
-                title: trimmed,
-                date: date,
-                recurrence: recurrence
-            )
+            let newEntry = MomentEntry(title: trimmed, date: date, recurrence: recurrence)
             modelContext.insert(newEntry)
         }
         dismiss()
-    }
-
-    func performDelete(_ entry: MomentEntry) {
-        if appState.pinnedEntryID == entry.id {
-            appState.unpin(entry: entry)
-        }
-        let title = entry.title
-        modelContext.delete(entry)
-        appState.showToast("Deleted \"\(title)\"")
-        onDeleteComplete()
     }
 }

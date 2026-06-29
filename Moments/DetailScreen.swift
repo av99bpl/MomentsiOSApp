@@ -165,7 +165,7 @@ struct DetailScreen: View {
 
             Button { onNavigate(.addEdit(entry.persistentModelID)) } label: {
                 Image(systemName: "pencil")
-                    .font(.system(size: 17, weight: .regular))
+                    .font(.system(size: 17, weight: .semibold))
                     .foregroundStyle(Color.mInk)
                     .frame(width: 46, height: 46)
                     .overlay(Circle().stroke(Color.mHairline, lineWidth: 1))

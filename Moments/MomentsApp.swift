@@ -3,6 +3,15 @@
 
 import SwiftUI
 import SwiftData
+import UIKit
+
+// Re-enables the interactive back-swipe gesture when the nav bar is hidden.
+extension UINavigationController {
+    override open func viewDidLoad() {
+        super.viewDidLoad()
+        interactivePopGestureRecognizer?.delegate = nil
+    }
+}
 
 @main
 struct MomentsApp: App {
