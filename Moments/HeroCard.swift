@@ -1,15 +1,11 @@
 // HeroCard.swift
 // Moments
-//
-// v1: warm paper only. No frosted glass variant.
 
 import SwiftUI
 
 struct HeroCard: View {
     let entry: MomentEntry
     let isPinned: Bool
-
-    private var mag: MagnitudeResult { entry.magnitude }
 
     private var differentYear: Bool {
         let cal = Calendar.current
@@ -19,38 +15,21 @@ struct HeroCard: View {
     var body: some View {
         VStack(spacing: 0) {
             statusLabel
-                .padding(.bottom, MSpace.heroStatusBottom)
-
-            if entry.isToday {
-                Text("Today")
-                    .font(.mSerif(MType.heroToday))
-                    .foregroundStyle(Color.mInk)
-                    .tracking(-1)
-                    .padding(.bottom, MSpace.heroTodayBottom)
-            } else {
-                Text(mag.number)
-                    .font(.mSerif(MType.heroNumber))
-                    .foregroundStyle(Color.mInk)
-                    .monospacedDigit()
-                    .tracking(-2)
-
-                Text(entry.isFuture ? "\(mag.unit) to go" : "\(mag.unit) ago")
-                    .font(.mSans(MType.heroUnit))
-                    .foregroundStyle(Color.mInkSoft)
-                    .padding(.top, MSpace.heroNumUnitGap)
-                    .padding(.bottom, MSpace.heroUnitTitleGap)
-            }
+                .padding(.bottom, 14)
 
             Text(entry.title)
-                .font(.mSans(MType.heroTitle, weight: .semibold))
+                .font(.mSerif(28))
                 .foregroundStyle(Color.mInk)
-                .padding(.bottom, MSpace.heroTitleDateGap)
+                .padding(.bottom, 8)
 
             Text(differentYear
                 ? entry.nextOccurrence.formatted(.dateTime.weekday(.wide).month(.wide).day().year())
                 : entry.nextOccurrence.formatted(.dateTime.weekday(.wide).month(.wide).day()))
                 .font(.mSans(MType.heroDate))
                 .foregroundStyle(Color.mInkSoft)
+                .padding(.bottom, 18)
+
+            countPill
         }
         .multilineTextAlignment(.center)
         .padding(.top, MSpace.heroPadTop)
@@ -63,6 +42,23 @@ struct HeroCard: View {
             RoundedRectangle(cornerRadius: MSpace.heroRadius)
                 .stroke(Color.mHairline, lineWidth: 1)
         )
+    }
+
+    private var countPill: some View {
+        Text(pillLabel)
+            .font(.mSans(14, weight: .semibold))
+            .foregroundStyle(Color.mClay)
+            .padding(.vertical, 7)
+            .padding(.horizontal, 18)
+            .background(Color.mClay.opacity(0.08))
+            .overlay(Capsule().stroke(Color.mClay.opacity(0.4), lineWidth: 1))
+            .clipShape(Capsule())
+    }
+
+    private var pillLabel: String {
+        if entry.isToday { return "Today" }
+        let m = entry.magnitude
+        return entry.isFuture ? "in \(m.number) \(m.unit)" : "\(m.number) \(m.unit) ago"
     }
 
     private var statusLabel: some View {

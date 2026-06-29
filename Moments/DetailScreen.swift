@@ -114,30 +114,10 @@ struct DetailScreen: View {
             statusLabel(entry: entry, isPinned: isPinned)
                 .padding(.bottom, 16)
 
-            if entry.isToday {
-                Text("Today")
-                    .font(.mSerif(MType.detailToday))
-                    .foregroundStyle(Color.mInk)
-                    .tracking(-1)
-                    .padding(.bottom, 24)
-            } else {
-                Text(mag.number)
-                    .font(.mSerif(MType.detailNumber))
-                    .foregroundStyle(Color.mInk)
-                    .monospacedDigit()
-                    .tracking(-2)
-
-                Text(entry.isFuture ? "\(mag.unit) to go" : "\(mag.unit) ago")
-                    .font(.mSans(MType.detailUnit))
-                    .foregroundStyle(Color.mInkSoft)
-                    .padding(.top, 6)
-                    .padding(.bottom, 28)
-            }
-
             Text(entry.title)
-                .font(.mSans(MType.detailTitle, weight: .semibold))
+                .font(.mSerif(34))
                 .foregroundStyle(Color.mInk)
-                .padding(.bottom, 6)
+                .padding(.bottom, 10)
 
             let diffYear = Calendar.current.component(.year, from: entry.nextOccurrence) != Calendar.current.component(.year, from: Date())
             Text(diffYear
@@ -156,12 +136,30 @@ struct DetailScreen: View {
                         RoundedRectangle(cornerRadius: MSpace.recurrPillRadius)
                             .stroke(Color.mHairline, lineWidth: 1)
                     )
-                    .padding(.top, 14)
+                    .padding(.top, 10)
             }
+
+            countPill(entry: entry, mag: mag)
+                .padding(.top, 20)
         }
         .multilineTextAlignment(.center)
         .frame(maxWidth: .infinity)
         .padding(.bottom, 32)
+    }
+
+    private func countPill(entry: MomentEntry, mag: MagnitudeResult) -> some View {
+        let label: String = {
+            if entry.isToday { return "Today" }
+            return entry.isFuture ? "in \(mag.number) \(mag.unit)" : "\(mag.number) \(mag.unit) ago"
+        }()
+        return Text(label)
+            .font(.mSans(15, weight: .semibold))
+            .foregroundStyle(Color.mClay)
+            .padding(.vertical, 8)
+            .padding(.horizontal, 20)
+            .background(Color.mClay.opacity(0.08))
+            .overlay(Capsule().stroke(Color.mClay.opacity(0.4), lineWidth: 1))
+            .clipShape(Capsule())
     }
 
     private func statusLabel(entry: MomentEntry, isPinned: Bool) -> some View {
