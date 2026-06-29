@@ -29,7 +29,7 @@ struct HeroCard: View {
                 .foregroundStyle(Color.mInkSoft)
                 .padding(.bottom, 18)
 
-            countPill
+            if !entry.isToday { countPill }
         }
         .multilineTextAlignment(.center)
         .padding(.top, MSpace.heroPadTop)

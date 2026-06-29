@@ -139,8 +139,10 @@ struct DetailScreen: View {
                     .padding(.top, 10)
             }
 
-            countPill(entry: entry, mag: mag)
-                .padding(.top, 20)
+            if !entry.isToday {
+                countPill(entry: entry, mag: mag)
+                    .padding(.top, 20)
+            }
         }
         .multilineTextAlignment(.center)
         .frame(maxWidth: .infinity)
