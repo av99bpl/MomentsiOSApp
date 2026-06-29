@@ -35,43 +35,47 @@ struct ListScreen: View {
             EmptyState(onAdd: handleAddTap)
                 .paperBG()
         } else {
-            List {
+            VStack(spacing: 0) {
                 header
-                    .listRowInsets(EdgeInsets())
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
-
                 heroSection
-                    .listRowInsets(EdgeInsets())
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
-
-                ForEach(ledgerEntries) { entry in
-                    LedgerRow(
-                        entry: entry,
-                        onTap: { onNavigate(.detail(entry.persistentModelID)) }
-                    )
-                    .listRowInsets(EdgeInsets(top: 0, leading: MSpace.screenH, bottom: 0, trailing: MSpace.screenH))
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
-                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        Button(role: .destructive) {
-                            confirmDeleteEntry = entry
-                        } label: {
-                            Label("Delete", systemImage: "trash")
+                    .padding(.horizontal, MSpace.heroMargin)
+                    .padding(.top, MSpace.heroTopMargin)
+                    .padding(.bottom, 8)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        if let hero = heroEntry {
+                            onNavigate(.detail(hero.persistentModelID))
                         }
                     }
-                }
 
-                Color.clear.frame(height: MSpace.fabBottom + MSpace.fabSize)
-                    .listRowInsets(EdgeInsets())
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
+                List {
+                    ForEach(ledgerEntries) { entry in
+                        LedgerRow(
+                            entry: entry,
+                            onTap: { onNavigate(.detail(entry.persistentModelID)) }
+                        )
+                        .listRowInsets(EdgeInsets(top: 0, leading: MSpace.screenH, bottom: 0, trailing: MSpace.screenH))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button(role: .destructive) {
+                                confirmDeleteEntry = entry
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
+                    }
+
+                    Color.clear.frame(height: MSpace.fabBottom + MSpace.fabSize)
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
+                .scrollIndicators(.hidden)
+                .background(Color.clear)
             }
-            .listStyle(.plain)
-            .scrollContentBackground(.hidden)
-            .scrollIndicators(.hidden)
-            .background(Color.clear)
             .overlay(alignment: .bottom) { fab }
             .paperBG()
             .overlay {
@@ -127,13 +131,6 @@ struct ListScreen: View {
     var heroSection: some View {
         if let hero = heroEntry {
             HeroCard(entry: hero, isPinned: isPinned)
-                .padding(.horizontal, MSpace.heroMargin)
-                .padding(.top, MSpace.heroTopMargin)
-                .padding(.bottom, 8)
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    onNavigate(.detail(hero.persistentModelID))
-                }
         }
     }
 
