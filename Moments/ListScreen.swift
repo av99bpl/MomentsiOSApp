@@ -104,13 +104,27 @@ struct ListScreen: View {
     // MARK: - Header
 
     var header: some View {
-        Text("MOMENTS")
-            .font(.mSans(MType.wordmark, weight: .semibold))
-            .foregroundStyle(Color.mInkSoft)
-            .tracking(6)
-            .frame(maxWidth: .infinity, alignment: .center)
-            .padding(.top, MSpace.statusBar)
-            .padding(.bottom, MSpace.headerBottom)
+        ZStack {
+            Text("MOMENTS")
+                .font(.mSans(MType.wordmark, weight: .semibold))
+                .foregroundStyle(Color.mInkSoft)
+                .tracking(6)
+                .frame(maxWidth: .infinity, alignment: .center)
+
+            HStack {
+                Spacer()
+                Button { onNavigate(.settings) } label: {
+                    Image(systemName: "gearshape")
+                        .font(.system(size: 13, weight: .regular))
+                        .foregroundStyle(Color.mInkSoft.opacity(0.55))
+                        .frame(width: 30, height: 30)
+                        .overlay(Circle().stroke(Color.mHairline, lineWidth: 1))
+                }
+            }
+            .padding(.horizontal, MSpace.screenH + 8)
+        }
+        .padding(.top, MSpace.statusBar)
+        .padding(.bottom, MSpace.headerBottom)
     }
 
     // MARK: - Hero

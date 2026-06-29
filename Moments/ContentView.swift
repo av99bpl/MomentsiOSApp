@@ -11,6 +11,7 @@ enum NavDest: Hashable {
     case detail(PersistentIdentifier)
     case addEdit(PersistentIdentifier?)  // nil = add mode
     case paywall
+    case settings
 }
 
 struct ContentView: View {
@@ -59,6 +60,9 @@ struct ContentView: View {
             .toolbar(.hidden, for: .navigationBar)
         case .paywall:
             PaywallScreen()
+                .toolbar(.hidden, for: .navigationBar)
+        case .settings:
+            SettingsScreen()
                 .toolbar(.hidden, for: .navigationBar)
         }
     }
