@@ -14,6 +14,14 @@ struct PaywallScreen: View {
 
     private let features = [
         "Unlimited entries",
+        "All new features, free forever",
+    ]
+
+    private let comingSoon = [
+        "Colors",
+        "Widgets",
+        "iCloud Sync",
+        "Apple Watch app",
     ]
 
     var priceLabel: String {
@@ -74,6 +82,37 @@ struct PaywallScreen: View {
                             .overlay(alignment: .bottom) { Color.mHairline.frame(height: 1) }
                         }
                     }
+                    .padding(.bottom, 24)
+
+                    // Coming Soon
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("Coming Soon")
+                            .font(.mSans(MType.fieldLabel, weight: .semibold))
+                            .foregroundStyle(Color.mInkSoft)
+                            .tracking(1)
+                            .textCase(.uppercase)
+                            .padding(.bottom, 10)
+
+                        ForEach(comingSoon, id: \.self) { item in
+                            HStack(spacing: 12) {
+                                Circle()
+                                    .stroke(Color.mHairline, lineWidth: 1.5)
+                                    .frame(width: MSpace.paywallCheckCirc, height: MSpace.paywallCheckCirc)
+                                    .overlay(
+                                        Image(systemName: "clock")
+                                            .font(.system(size: 9, weight: .medium))
+                                            .foregroundStyle(Color.mInkSoft)
+                                    )
+                                Text(item)
+                                    .font(.mSans(MType.paywallFeature))
+                                    .foregroundStyle(Color.mInkSoft)
+                                Spacer()
+                            }
+                            .padding(.vertical, 10)
+                            .overlay(alignment: .bottom) { Color.mHairline.frame(height: 1) }
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.bottom, 36)
 
                     Button {
