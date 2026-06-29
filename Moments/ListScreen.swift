@@ -24,10 +24,6 @@ struct ListScreen: View {
         return appState.pinnedEntryID == hero.id && !appState.isPinExpired
     }
 
-    var showEntryCount: Bool {
-        !appState.isPremium && allEntries.count >= MConstants.freeEntryLimit - 2
-    }
-
     // MARK: - Body
 
     var body: some View {
@@ -66,6 +62,15 @@ struct ListScreen: View {
                         }
                     }
 
+                    Text(MBuild.label)
+                        .font(.mSans(9, weight: .regular))
+                        .foregroundStyle(Color.mInkSoft.opacity(0.25))
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.top, 16)
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+
                     Color.clear.frame(height: MSpace.fabBottom + MSpace.fabSize)
                         .listRowInsets(EdgeInsets())
                         .listRowBackground(Color.clear)
@@ -99,30 +104,13 @@ struct ListScreen: View {
     // MARK: - Header
 
     var header: some View {
-        HStack(spacing: 0) {
-            Text("MOMENTS")
-                .font(.mSans(MType.wordmark, weight: .semibold))
-                .foregroundStyle(Color.mInkSoft)
-                .tracking(1.2)
-
-            Text("Build \(MBuild.label)")
-                .font(.mSans(10, weight: .regular))
-                .foregroundStyle(Color.mInkSoft.opacity(0.5))
-                .padding(.leading, 6)
-
-            Spacer()
-
-            if showEntryCount {
-                Text("\(allEntries.count)/\(MConstants.freeEntryLimit)")
-                    .font(.mSans(MType.counter, weight: .semibold))
-                    .foregroundStyle(
-                        allEntries.count >= MConstants.freeEntryLimit ? Color.mInk : Color.mInkSoft
-                    )
-            }
-        }
-        .padding(.horizontal, MSpace.screenH + 8)
-        .padding(.top, MSpace.statusBar)
-        .padding(.bottom, MSpace.headerBottom)
+        Text("MOMENTS")
+            .font(.mSans(MType.wordmark, weight: .semibold))
+            .foregroundStyle(Color.mInkSoft)
+            .tracking(6)
+            .frame(maxWidth: .infinity, alignment: .center)
+            .padding(.top, MSpace.statusBar)
+            .padding(.bottom, MSpace.headerBottom)
     }
 
     // MARK: - Hero
