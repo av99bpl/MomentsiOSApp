@@ -217,12 +217,12 @@ extension View {
 // MARK: - App Constants
 
 enum MBuild {
-    static let label = "Jun28-16:210615"
+    static let label = "Jun28-17:210814"
 }
 
 enum MConstants {
-    /// Free tier entry cap. Paywall fires on attempt to add entry #11.
-    static let freeEntryLimit = 10
+    /// Free tier entry cap. Paywall fires on attempt to add entry #6.
+    static let freeEntryLimit = 5
     /// Pin duration: 7 days in seconds.
     static let pinDuration: TimeInterval = 7 * 24 * 60 * 60
     /// StoreKit product ID for the one-time unlock. Update with your App Store Connect ID.
