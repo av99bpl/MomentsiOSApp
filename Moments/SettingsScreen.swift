@@ -72,7 +72,7 @@ struct SettingsScreen: View {
                             .textCase(.uppercase)
                         Text(MBuild.label)
                             .font(.mSans(13, weight: .medium))
-                            .foregroundStyle(Color.mInkSoft)
+                            .foregroundStyle(Color.mInk)
                     }
                     .padding(.bottom, 24)
                 }

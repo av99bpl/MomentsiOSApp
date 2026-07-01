@@ -257,7 +257,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "FILE=\"${SRCROOT}/Shared/DesignSystem.swift\"\nSTAMP=$(date +'%b%d-%H%M%S')\n/usr/bin/sed -i '' -E \"s/(static let label = \\\")[^\\\"]*(\\\")/\\\\1${STAMP}\\\\2/\" \"$FILE\"\n";
+			shellScript = "FILE=\"${SRCROOT}/Shared/DesignSystem.swift\"\nSTAMP=$(date +'%y%m%d-%H%M%S')\n/usr/bin/sed -i '' -E \"s/(static let label = \\\")[^\\\"]*(\\\")/\\\\1${STAMP}\\\\2/\" \"$FILE\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
