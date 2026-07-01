@@ -63,15 +63,6 @@ struct ListScreen: View {
                         }
                     }
 
-                    Text(MBuild.label)
-                        .font(.mSans(9, weight: .regular))
-                        .foregroundStyle(Color.mInkSoft.opacity(0.25))
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .padding(.top, 16)
-                        .listRowInsets(EdgeInsets())
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
-
                     Color.clear.frame(height: MSpace.fabBottom + MSpace.fabSize)
                         .listRowInsets(EdgeInsets())
                         .listRowBackground(Color.clear)

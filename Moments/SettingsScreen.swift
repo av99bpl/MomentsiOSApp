@@ -63,6 +63,18 @@ struct SettingsScreen: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 40)
+
+                    VStack(spacing: 4) {
+                        Text("Build")
+                            .font(.mSans(MType.fieldLabel, weight: .semibold))
+                            .foregroundStyle(Color.mInkSoft)
+                            .tracking(1)
+                            .textCase(.uppercase)
+                        Text(MBuild.label)
+                            .font(.mSans(13, weight: .medium))
+                            .foregroundStyle(Color.mInkSoft)
+                    }
+                    .padding(.bottom, 24)
                 }
             }
         }
