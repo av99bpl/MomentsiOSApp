@@ -6,33 +6,51 @@
 // Do not hardcode colors, fonts, or spacing anywhere else in the project.
 
 import SwiftUI
+import UIKit
 
 // MARK: - Color Palette
 
+private extension UIColor {
+    convenience init(hex: String) {
+        var int: UInt64 = 0
+        Scanner(string: hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)).scanHexInt64(&int)
+        self.init(
+            red:   CGFloat((int >> 16) & 0xFF) / 255,
+            green: CGFloat((int >>  8) & 0xFF) / 255,
+            blue:  CGFloat( int        & 0xFF) / 255,
+            alpha: 1
+        )
+    }
+}
+
+private func adaptive(light: String, dark: String) -> Color {
+    Color(UIColor { $0.userInterfaceStyle == .dark ? UIColor(hex: dark) : UIColor(hex: light) })
+}
+
 extension Color {
-    /// Warm off-white. App background. Hex: #FAF8F5
-    static let mPaper       = Color(hex: "FAF8F5")
-    /// Slightly deeper warm white. Hero card, bottom sheets. Hex: #F3F0EA
-    static let mPaperRaised = Color(hex: "F3F0EA")
-    /// Near-black. All primary text. Hex: #1C1B19
-    static let mInk         = Color(hex: "1C1B19")
-    /// Warm mid-gray. Secondary labels, units, dates. Hex: #6B6760
-    static let mInkSoft     = Color(hex: "6B6760")
-    /// Pale warm gray. 1pt row dividers only. Never thicker. Hex: #E4E0D8
-    static let mHairline    = Color(hex: "E4E0D8")
+    /// Warm off-white / warm near-black. App background.
+    static let mPaper       = adaptive(light: "FAF8F5", dark: "1C1A18")
+    /// Card surface — slightly raised above background.
+    static let mPaperRaised = adaptive(light: "F3F0EA", dark: "262320")
+    /// Primary text.
+    static let mInk         = adaptive(light: "1C1B19", dark: "F0EDE8")
+    /// Secondary labels, units, dates.
+    static let mInkSoft     = adaptive(light: "6B6760", dark: "9B9590")
+    /// 1pt row dividers only. Never thicker.
+    static let mHairline    = adaptive(light: "E4E0D8", dark: "3C3935")
 
     // ACCENT — RESERVED.
     // Use ONLY on: hero card status label, hero card status label on detail screen.
     // Do NOT use on: buttons, chips, navigation, form fields, or any secondary UI.
-    /// Muted terracotta. The single accent color. Hex: #B8693F
-    static let mClay        = Color(hex: "B8693F")
-    /// Pale clay. Empty state decoration only. Hex: #D9B6A4
-    static let mClayDim     = Color(hex: "D9B6A4")
+    /// Muted terracotta. The single accent color.
+    static let mClay        = adaptive(light: "B8693F", dark: "C87B50")
+    /// Pale clay. Empty state decoration only.
+    static let mClayDim     = adaptive(light: "D9B6A4", dark: "6B4535")
 
-    /// Cool gray. Past/count-up event numerals in the ledger list. Hex: #9C988F
-    static let mPast        = Color(hex: "9C988F")
-    /// Dark red. Delete actions only. Nothing else. Hex: #A8472E
-    static let mDestructive = Color(hex: "A8472E")
+    /// Past/count-up event numerals in the ledger list.
+    static let mPast        = adaptive(light: "9C988F", dark: "706B64")
+    /// Delete actions only. Nothing else.
+    static let mDestructive = adaptive(light: "A8472E", dark: "CC5A3E")
 }
 
 // MARK: - Typography
@@ -169,20 +187,20 @@ enum MSpace {
 
 // MARK: - Surface Styles
 
-/// Warm paper background: base color + two layered radial gradients
-/// simulating paper catching light unevenly. Apply to the root app background.
+/// Warm paper background. Apply to the root app background.
 struct MPaperBG: ViewModifier {
+    @Environment(\.colorScheme) private var cs
     func body(content: Content) -> some View {
         content.background(
             ZStack {
                 Color.mPaper
                 RadialGradient(
-                    colors: [.white.opacity(0.55), .clear],
+                    colors: [.white.opacity(cs == .dark ? 0.03 : 0.55), .clear],
                     center: UnitPoint(x: 0.3, y: 0),
                     startRadius: 0, endRadius: 320
                 )
                 RadialGradient(
-                    colors: [.black.opacity(0.025), .clear],
+                    colors: [.black.opacity(cs == .dark ? 0.20 : 0.025), .clear],
                     center: UnitPoint(x: 0.85, y: 1),
                     startRadius: 0, endRadius: 340
                 )
@@ -192,15 +210,15 @@ struct MPaperBG: ViewModifier {
     }
 }
 
-/// Warm paper raised: same treatment on mPaperRaised.
-/// Apply to the hero card and bottom sheets.
+/// Warm paper raised. Apply to the hero card and bottom sheets.
 struct MPaperRaisedBG: ViewModifier {
+    @Environment(\.colorScheme) private var cs
     func body(content: Content) -> some View {
         content.background(
             ZStack {
                 Color.mPaperRaised
                 RadialGradient(
-                    colors: [.white.opacity(0.55), .clear],
+                    colors: [.white.opacity(cs == .dark ? 0.04 : 0.55), .clear],
                     center: UnitPoint(x: 0.3, y: 0),
                     startRadius: 0, endRadius: 280
                 )
@@ -217,7 +235,7 @@ extension View {
 // MARK: - App Constants
 
 enum MBuild {
-    static let label = "Jun28-21:212619"
+    static let label = "Jun28-22:114859"
 }
 
 enum MConstants {

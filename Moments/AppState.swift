@@ -12,6 +12,10 @@ final class AppState {
         didSet { UserDefaults.standard.set(isPremium, forKey: "isPremium") }
     }
 
+    var prefersDarkMode: Bool = UserDefaults.standard.bool(forKey: "prefersDarkMode") {
+        didSet { UserDefaults.standard.set(prefersDarkMode, forKey: "prefersDarkMode") }
+    }
+
     var pinnedEntryID: UUID? = {
         guard let s = UserDefaults.standard.string(forKey: "pinnedEntryID") else { return nil }
         return UUID(uuidString: s)

@@ -193,6 +193,7 @@ struct DetailScreen: View {
         }
         let title = entry.title
         modelContext.delete(entry)
+        try? modelContext.save()
         appState.showToast("Deleted \"\(title)\"")
         dismiss()
     }

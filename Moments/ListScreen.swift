@@ -154,7 +154,8 @@ struct ListScreen: View {
     // MARK: - Actions
 
     func handleAddTap() {
-        if appState.atFreeLimit(entryCount: allEntries.count) {
+        let count = (try? modelContext.fetch(FetchDescriptor<MomentEntry>()))?.count ?? allEntries.count
+        if appState.atFreeLimit(entryCount: count) {
             onNavigate(.paywall)
         } else {
             onNavigate(.addEdit(nil))
@@ -167,6 +168,7 @@ struct ListScreen: View {
         }
         let title = entry.title
         modelContext.delete(entry)
+        try? modelContext.save()
         appState.showToast("Deleted \"\(title)\"")
     }
 }

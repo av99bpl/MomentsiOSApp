@@ -28,6 +28,7 @@ struct ContentView: View {
                     destination(for: dest)
                 }
         }
+        .preferredColorScheme(appState.prefersDarkMode ? .dark : .light)
         .background(Color.mPaper)
         .overlay(alignment: .bottom) {
             ZStack {
