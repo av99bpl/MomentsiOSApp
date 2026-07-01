@@ -18,8 +18,9 @@ struct MomentsEntry: TimelineEntry {
     let isToday: Bool
     let isFuture: Bool
     let isEmpty: Bool
+    let appearanceMode: AppearanceMode
 
-    init(from entry: MomentEntry) {
+    init(from entry: MomentEntry, appearanceMode: AppearanceMode) {
         date = Date()
         title = entry.title
         dateLabel = entry.listDateLabel
@@ -29,9 +30,10 @@ struct MomentsEntry: TimelineEntry {
         isToday = entry.isToday
         isFuture = entry.isFuture
         isEmpty = false
+        self.appearanceMode = appearanceMode
     }
 
-    init(placeholder title: String, dateLabel: String, magNumber: String, magUnit: String, isToday: Bool, isFuture: Bool) {
+    init(placeholder title: String, dateLabel: String, magNumber: String, magUnit: String, isToday: Bool, isFuture: Bool, isEmptyState: Bool = false, appearanceMode: AppearanceMode = .system) {
         date = Date()
         self.title = title
         self.dateLabel = dateLabel
@@ -39,7 +41,8 @@ struct MomentsEntry: TimelineEntry {
         self.magUnit = magUnit
         self.isToday = isToday
         self.isFuture = isFuture
-        isEmpty = false
+        isEmpty = isEmptyState
+        self.appearanceMode = appearanceMode
     }
 
     static let placeholder = MomentsEntry(
@@ -47,9 +50,12 @@ struct MomentsEntry: TimelineEntry {
         magNumber: "42", magUnit: "days", isToday: false, isFuture: true
     )
 
-    static let empty = MomentsEntry(
-        placeholder: "", dateLabel: "", magNumber: "", magUnit: "", isToday: false, isFuture: false
-    )
+    static func empty(appearanceMode: AppearanceMode = .system) -> MomentsEntry {
+        MomentsEntry(
+            placeholder: "", dateLabel: "", magNumber: "", magUnit: "",
+            isToday: false, isFuture: false, isEmptyState: true, appearanceMode: appearanceMode
+        )
+    }
 }
 
 // MARK: - Provider
@@ -79,8 +85,10 @@ struct MomentsProvider: TimelineProvider {
         let all = (try? context.fetch(FetchDescriptor<MomentEntry>())) ?? []
         let appState = AppState()
         let sorted = appState.sortedEntries(all)
-        guard let hero = sorted.first else { return .empty }
-        return MomentsEntry(from: hero)
+        guard let hero = sorted.first else {
+            return .empty(appearanceMode: appState.appearanceMode)
+        }
+        return MomentsEntry(from: hero, appearanceMode: appState.appearanceMode)
     }
 }
 
@@ -102,6 +110,7 @@ struct MomentsWidgetEntryView: View {
             }
         }
         .containerBackground(Color.mPaper, for: .widget)
+        .preferredColorScheme(entry.appearanceMode.colorScheme)
     }
 
     private var emptyView: some View {

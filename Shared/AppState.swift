@@ -39,7 +39,10 @@ final class AppState {
         let raw = SharedStore.defaults.string(forKey: "appearanceMode") ?? ""
         return AppearanceMode(rawValue: raw) ?? .system
     }() {
-        didSet { SharedStore.defaults.set(appearanceMode.rawValue, forKey: "appearanceMode") }
+        didSet {
+            SharedStore.defaults.set(appearanceMode.rawValue, forKey: "appearanceMode")
+            WidgetCenter.shared.reloadAllTimelines()
+        }
     }
 
     var pinnedEntryID: UUID? = {
