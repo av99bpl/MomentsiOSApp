@@ -17,11 +17,7 @@ extension UINavigationController {
 struct MomentsApp: App {
     @State private var appState = AppState()
 
-    private static let container: ModelContainer = {
-        let schema = Schema([MomentEntry.self])
-        let local = ModelConfiguration(schema: schema)
-        return try! ModelContainer(for: schema, configurations: [local])
-    }()
+    private static let container: ModelContainer = SharedStore.makeContainer()
 
     var body: some Scene {
         WindowGroup {

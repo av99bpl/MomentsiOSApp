@@ -2,6 +2,7 @@
 // Moments
 
 import SwiftUI
+import WidgetKit
 
 enum AppearanceMode: String, CaseIterable {
     case light  = "light"
@@ -30,29 +31,29 @@ final class AppState {
 
     // MARK: - Persisted state
 
-    var isPremium: Bool = UserDefaults.standard.bool(forKey: "isPremium") {
-        didSet { UserDefaults.standard.set(isPremium, forKey: "isPremium") }
+    var isPremium: Bool = SharedStore.defaults.bool(forKey: "isPremium") {
+        didSet { SharedStore.defaults.set(isPremium, forKey: "isPremium") }
     }
 
     var appearanceMode: AppearanceMode = {
-        let raw = UserDefaults.standard.string(forKey: "appearanceMode") ?? ""
+        let raw = SharedStore.defaults.string(forKey: "appearanceMode") ?? ""
         return AppearanceMode(rawValue: raw) ?? .system
     }() {
-        didSet { UserDefaults.standard.set(appearanceMode.rawValue, forKey: "appearanceMode") }
+        didSet { SharedStore.defaults.set(appearanceMode.rawValue, forKey: "appearanceMode") }
     }
 
     var pinnedEntryID: UUID? = {
-        guard let s = UserDefaults.standard.string(forKey: "pinnedEntryID") else { return nil }
+        guard let s = SharedStore.defaults.string(forKey: "pinnedEntryID") else { return nil }
         return UUID(uuidString: s)
     }() {
-        didSet { UserDefaults.standard.set(pinnedEntryID?.uuidString, forKey: "pinnedEntryID") }
+        didSet { SharedStore.defaults.set(pinnedEntryID?.uuidString, forKey: "pinnedEntryID") }
     }
 
     var pinnedAt: Date? = {
-        let t = UserDefaults.standard.double(forKey: "pinnedAt")
+        let t = SharedStore.defaults.double(forKey: "pinnedAt")
         return t > 0 ? Date(timeIntervalSince1970: t) : nil
     }() {
-        didSet { UserDefaults.standard.set(pinnedAt?.timeIntervalSince1970 ?? 0, forKey: "pinnedAt") }
+        didSet { SharedStore.defaults.set(pinnedAt?.timeIntervalSince1970 ?? 0, forKey: "pinnedAt") }
     }
 
     // MARK: - Ephemeral state
@@ -71,12 +72,14 @@ final class AppState {
         pinnedEntryID = entry.id
         pinnedAt = now
         entry.pinnedAt = now
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     func unpin(entry: MomentEntry? = nil) {
         pinnedEntryID = nil
         pinnedAt = nil
         entry?.pinnedAt = nil
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     func checkPinExpiry(entries: [MomentEntry]) {

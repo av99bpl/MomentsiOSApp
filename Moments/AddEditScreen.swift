@@ -3,6 +3,7 @@
 
 import SwiftUI
 import SwiftData
+import WidgetKit
 
 struct AddEditScreen: View {
     let existingID: PersistentIdentifier?
@@ -191,6 +192,8 @@ struct AddEditScreen: View {
             let newEntry = MomentEntry(title: trimmed, date: date, recurrence: recurrence)
             modelContext.insert(newEntry)
         }
+        try? modelContext.save()
+        WidgetCenter.shared.reloadAllTimelines()
         dismiss()
     }
 }

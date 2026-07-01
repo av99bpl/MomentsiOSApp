@@ -6,8 +6,39 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		8F67C3FA1E57238A3C15EE70 /* MomentsWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B37816F2D404DF9CC1555E51 /* MomentsWidget.appex */; platformFilters = (ios, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		9F1AF189CED11417057B687D /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A6883B6B830088CE59908A78 /* Foundation.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		5B9ACF23E5A6F5CFB2E48540 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6EAAB1212FF005F50022F87E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2823E17426190234C92993AA;
+			remoteInfo = MomentsWidget;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		44E7C71204A8D5EDA35351CC /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				8F67C3FA1E57238A3C15EE70 /* MomentsWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		6EAAB1292FF005F50022F87E /* Moments.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Moments.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A6883B6B830088CE59908A78 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		B37816F2D404DF9CC1555E51 /* MomentsWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MomentsWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -18,15 +49,37 @@
 			);
 			target = 6EAAB1282FF005F50022F87E /* Moments */;
 		};
+		A315A907547EA9D0ED1276D8 /* Exceptions for "MomentsWidget" folder in "MomentsWidget" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 2823E17426190234C92993AA /* MomentsWidget */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		312130166A9D0B4EB3E02DF2 /* MomentsWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				A315A907547EA9D0ED1276D8 /* Exceptions for "MomentsWidget" folder in "MomentsWidget" target */,
+			);
+			path = MomentsWidget;
+			sourceTree = "<group>";
+		};
 		6EAAB12B2FF005F50022F87E /* Moments */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				6EAAB1392FF005F50022F87E /* Exceptions for "Moments" folder in "Moments" target */,
 			);
 			path = Moments;
+			sourceTree = "<group>";
+		};
+		943FA12CDC8EDC5EF7C41FB5 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			path = Shared;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -39,6 +92,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F21004F04C67E9ED28394FC7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9F1AF189CED11417057B687D /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -47,6 +108,9 @@
 			children = (
 				6EAAB12B2FF005F50022F87E /* Moments */,
 				6EAAB12A2FF005F50022F87E /* Products */,
+				943FA12CDC8EDC5EF7C41FB5 /* Shared */,
+				EC2C72A54E3793578F28E522 /* Frameworks */,
+				312130166A9D0B4EB3E02DF2 /* MomentsWidget */,
 			);
 			sourceTree = "<group>";
 		};
@@ -54,13 +118,51 @@
 			isa = PBXGroup;
 			children = (
 				6EAAB1292FF005F50022F87E /* Moments.app */,
+				B37816F2D404DF9CC1555E51 /* MomentsWidget.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		AB06009298531554F4457876 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				A6883B6B830088CE59908A78 /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
+		EC2C72A54E3793578F28E522 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				AB06009298531554F4457876 /* iOS */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		2823E17426190234C92993AA /* MomentsWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 982537B346EF16F52976F2CF /* Build configuration list for PBXNativeTarget "MomentsWidget" */;
+			buildPhases = (
+				BB9B834928B04740E2E59EE2 /* Sources */,
+				F21004F04C67E9ED28394FC7 /* Frameworks */,
+				D1C99B2254C872729080BB6C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				943FA12CDC8EDC5EF7C41FB5 /* Shared */,
+				312130166A9D0B4EB3E02DF2 /* MomentsWidget */,
+			);
+			name = MomentsWidget;
+			productName = MomentsWidget;
+			productReference = B37816F2D404DF9CC1555E51 /* MomentsWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		6EAAB1282FF005F50022F87E /* Moments */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 6EAAB13A2FF005F50022F87E /* Build configuration list for PBXNativeTarget "Moments" */;
@@ -69,13 +171,16 @@
 				6EAAB1252FF005F50022F87E /* Sources */,
 				6EAAB1262FF005F50022F87E /* Frameworks */,
 				6EAAB1272FF005F50022F87E /* Resources */,
+				44E7C71204A8D5EDA35351CC /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				02A0DFFF5FFC91FE8F01300C /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				6EAAB12B2FF005F50022F87E /* Moments */,
+				943FA12CDC8EDC5EF7C41FB5 /* Shared */,
 			);
 			name = Moments;
 			productName = Moments;
@@ -112,12 +217,20 @@
 			projectRoot = "";
 			targets = (
 				6EAAB1282FF005F50022F87E /* Moments */,
+				2823E17426190234C92993AA /* MomentsWidget */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		6EAAB1272FF005F50022F87E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D1C99B2254C872729080BB6C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -144,7 +257,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "FILE=\"${SRCROOT}/Moments/DesignSystem.swift\"\nSTAMP=$(date +'%b%d-%H%M%S')\n/usr/bin/sed -i '' -E \"s/(static let label = \\\")[^\\\"]*(\\\")/\\\\1${STAMP}\\\\2/\" \"$FILE\"\n";
+			shellScript = "FILE=\"${SRCROOT}/Shared/DesignSystem.swift\"\nSTAMP=$(date +'%b%d-%H%M%S')\n/usr/bin/sed -i '' -E \"s/(static let label = \\\")[^\\\"]*(\\\")/\\\\1${STAMP}\\\\2/\" \"$FILE\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -156,7 +269,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BB9B834928B04740E2E59EE2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		02A0DFFF5FFC91FE8F01300C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = MomentsWidget;
+			target = 2823E17426190234C92993AA /* MomentsWidget */;
+			targetProxy = 5B9ACF23E5A6F5CFB2E48540 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		6EAAB13B2FF005F50022F87E /* Debug */ = {
@@ -164,6 +293,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Moments/Moments.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = JT367444PT;
@@ -209,6 +339,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Moments/Moments.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = JT367444PT;
@@ -363,6 +494,67 @@
 			};
 			name = Release;
 		};
+		7F7F7A3CB4FEF8C209746273 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = MomentsWidget/MomentsWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = JT367444PT;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MomentsWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Moments;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = Vishful.Moments.MomentsWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		ED246C52A56D8F19558EA4F5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = MomentsWidget/MomentsWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = JT367444PT;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MomentsWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Moments;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = Vishful.Moments.MomentsWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -380,6 +572,15 @@
 			buildConfigurations = (
 				6EAAB13B2FF005F50022F87E /* Debug */,
 				6EAAB13C2FF005F50022F87E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		982537B346EF16F52976F2CF /* Build configuration list for PBXNativeTarget "MomentsWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7F7F7A3CB4FEF8C209746273 /* Release */,
+				ED246C52A56D8F19558EA4F5 /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

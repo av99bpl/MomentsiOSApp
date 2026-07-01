@@ -5,6 +5,7 @@
 
 import SwiftUI
 import SwiftData
+import WidgetKit
 
 struct DetailScreen: View {
     let entryID: PersistentIdentifier
@@ -195,6 +196,7 @@ struct DetailScreen: View {
         modelContext.delete(entry)
         try? modelContext.save()
         appState.showToast("Deleted \"\(title)\"")
+        WidgetCenter.shared.reloadAllTimelines()
         dismiss()
     }
 

@@ -3,6 +3,7 @@
 
 import SwiftUI
 import SwiftData
+import WidgetKit
 
 struct ListScreen: View {
     @Environment(AppState.self) private var appState
@@ -170,6 +171,7 @@ struct ListScreen: View {
         modelContext.delete(entry)
         try? modelContext.save()
         appState.showToast("Deleted \"\(title)\"")
+        WidgetCenter.shared.reloadAllTimelines()
     }
 }
 

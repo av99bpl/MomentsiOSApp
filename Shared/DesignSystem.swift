@@ -235,7 +235,7 @@ extension View {
 // MARK: - App Constants
 
 enum MBuild {
-    static let label = "Jul01-120223"
+    static let label = "Jul01-121659"
 }
 
 enum MConstants {
@@ -249,6 +249,8 @@ enum MConstants {
     static let priceDisplay = "$4.99"
     /// IAP display name shown in the paywall CTA button.
     static let iapDisplayName = "Moments Unlimited"
+    /// App Group shared by the app and the widget extension for data + defaults.
+    static let appGroupID = "group.Vishful.Moments"
 }
 
 // MARK: - Number Formatting
