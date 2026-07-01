@@ -3,6 +3,28 @@
 
 import SwiftUI
 
+enum AppearanceMode: String, CaseIterable {
+    case light  = "light"
+    case dark   = "dark"
+    case system = "system"
+
+    var label: String {
+        switch self {
+        case .light:  return "Light"
+        case .dark:   return "Dark"
+        case .system: return "System"
+        }
+    }
+
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .light:  return .light
+        case .dark:   return .dark
+        case .system: return nil
+        }
+    }
+}
+
 @Observable
 final class AppState {
 
@@ -12,8 +34,11 @@ final class AppState {
         didSet { UserDefaults.standard.set(isPremium, forKey: "isPremium") }
     }
 
-    var prefersDarkMode: Bool = UserDefaults.standard.bool(forKey: "prefersDarkMode") {
-        didSet { UserDefaults.standard.set(prefersDarkMode, forKey: "prefersDarkMode") }
+    var appearanceMode: AppearanceMode = {
+        let raw = UserDefaults.standard.string(forKey: "appearanceMode") ?? ""
+        return AppearanceMode(rawValue: raw) ?? .system
+    }() {
+        didSet { UserDefaults.standard.set(appearanceMode.rawValue, forKey: "appearanceMode") }
     }
 
     var pinnedEntryID: UUID? = {

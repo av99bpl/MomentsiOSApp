@@ -15,19 +15,31 @@ struct SettingsScreen: View {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 16) {
                     // Appearance card
-                    HStack(spacing: 0) {
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text("Dark Mode")
-                                .font(.mSans(16, weight: .medium))
-                                .foregroundStyle(Color.mInk)
-                            Text("Easier on the eyes at night")
-                                .font(.mSans(13))
-                                .foregroundStyle(Color.mInkSoft)
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("Appearance")
+                            .font(.mSans(MType.fieldLabel, weight: .semibold))
+                            .foregroundStyle(Color.mInkSoft)
+                            .tracking(1)
+                            .textCase(.uppercase)
+
+                        HStack(spacing: 8) {
+                            ForEach(AppearanceMode.allCases, id: \.self) { mode in
+                                let selected = state.appearanceMode == mode
+                                Button { state.appearanceMode = mode } label: {
+                                    Text(mode.label)
+                                        .font(.mSans(MType.segButton, weight: .semibold))
+                                        .foregroundStyle(selected ? Color.mPaper : Color.mInk)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, MSpace.segV)
+                                        .background(selected ? Color.mInk : Color.clear)
+                                        .clipShape(RoundedRectangle(cornerRadius: MSpace.segRadius))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: MSpace.segRadius)
+                                                .stroke(selected ? Color.clear : Color.mHairline, lineWidth: 1)
+                                        )
+                                }
+                            }
                         }
-                        Spacer()
-                        Toggle("", isOn: $state.prefersDarkMode)
-                            .labelsHidden()
-                            .tint(Color.mClay)
                     }
                     .padding(.horizontal, MSpace.heroPadH)
                     .padding(.vertical, 20)
